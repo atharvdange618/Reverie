@@ -11,6 +11,15 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		83707E90CF094F26A6AAF844 /* Inter_28pt-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 95E8E07B5F6D4EC498AB7184 /* Inter_28pt-Bold.ttf */; };
+		7CC3F049A59543029D621578 /* Inter_28pt-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 632DB0F928644DA68C73E521 /* Inter_28pt-Medium.ttf */; };
+		6A657D7112E14964B8AC7C5C /* Inter_28pt-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3C6DCAA3EA5141AC820FD4D5 /* Inter_28pt-Regular.ttf */; };
+		5EE1DE92F7B04787905654DC /* Inter_28pt-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8442894BE6364B02AA2A4406 /* Inter_28pt-SemiBold.ttf */; };
+		4A4DD9577C9C47678C29FAE8 /* Literata-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FD64D451E9D54E24957ADA49 /* Literata-Italic.ttf */; };
+		6A776E7E7DF54AEFAFDE3819 /* Literata-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 910C598B4FCB47859E04D8A3 /* Literata-Medium.ttf */; };
+		4328BF609CB8442493C2708A /* Literata-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18CA15BABC0A427789AAA4A8 /* Literata-Regular.ttf */; };
+		68EE0603EC5E493FA0161CDC /* Literata-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D83AC28274FA415B99840541 /* Literata-SemiBold.ttf */; };
+		A68F1E9D73944DD9A4206248 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3966CEE3CB4340EA8D8235AA /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +33,15 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Reverie/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Reverie/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		95E8E07B5F6D4EC498AB7184 /* Inter_28pt-Bold.ttf */ = {isa = PBXFileReference; name = "Inter_28pt-Bold.ttf"; path = "../src/assets/fonts/Inter_28pt-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		632DB0F928644DA68C73E521 /* Inter_28pt-Medium.ttf */ = {isa = PBXFileReference; name = "Inter_28pt-Medium.ttf"; path = "../src/assets/fonts/Inter_28pt-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		3C6DCAA3EA5141AC820FD4D5 /* Inter_28pt-Regular.ttf */ = {isa = PBXFileReference; name = "Inter_28pt-Regular.ttf"; path = "../src/assets/fonts/Inter_28pt-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		8442894BE6364B02AA2A4406 /* Inter_28pt-SemiBold.ttf */ = {isa = PBXFileReference; name = "Inter_28pt-SemiBold.ttf"; path = "../src/assets/fonts/Inter_28pt-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		FD64D451E9D54E24957ADA49 /* Literata-Italic.ttf */ = {isa = PBXFileReference; name = "Literata-Italic.ttf"; path = "../src/assets/fonts/Literata-Italic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		910C598B4FCB47859E04D8A3 /* Literata-Medium.ttf */ = {isa = PBXFileReference; name = "Literata-Medium.ttf"; path = "../src/assets/fonts/Literata-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		18CA15BABC0A427789AAA4A8 /* Literata-Regular.ttf */ = {isa = PBXFileReference; name = "Literata-Regular.ttf"; path = "../src/assets/fonts/Literata-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		D83AC28274FA415B99840541 /* Literata-SemiBold.ttf */ = {isa = PBXFileReference; name = "Literata-SemiBold.ttf"; path = "../src/assets/fonts/Literata-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		3966CEE3CB4340EA8D8235AA /* README.md */ = {isa = PBXFileReference; name = "README.md"; path = "../src/assets/fonts/README.md"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +92,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				059D42DC93D148C5BB0B4992 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -96,6 +115,23 @@
 			);
 			path = Pods;
 			sourceTree = "<group>";
+		};
+		059D42DC93D148C5BB0B4992 /* Resources */ = {
+			isa = "PBXGroup";
+			children = (
+				95E8E07B5F6D4EC498AB7184 /* Inter_28pt-Bold.ttf */,
+				632DB0F928644DA68C73E521 /* Inter_28pt-Medium.ttf */,
+				3C6DCAA3EA5141AC820FD4D5 /* Inter_28pt-Regular.ttf */,
+				8442894BE6364B02AA2A4406 /* Inter_28pt-SemiBold.ttf */,
+				FD64D451E9D54E24957ADA49 /* Literata-Italic.ttf */,
+				910C598B4FCB47859E04D8A3 /* Literata-Medium.ttf */,
+				18CA15BABC0A427789AAA4A8 /* Literata-Regular.ttf */,
+				D83AC28274FA415B99840541 /* Literata-SemiBold.ttf */,
+				3966CEE3CB4340EA8D8235AA /* README.md */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -159,6 +195,15 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				83707E90CF094F26A6AAF844 /* Inter_28pt-Bold.ttf in Resources */,
+				7CC3F049A59543029D621578 /* Inter_28pt-Medium.ttf in Resources */,
+				6A657D7112E14964B8AC7C5C /* Inter_28pt-Regular.ttf in Resources */,
+				5EE1DE92F7B04787905654DC /* Inter_28pt-SemiBold.ttf in Resources */,
+				4A4DD9577C9C47678C29FAE8 /* Literata-Italic.ttf in Resources */,
+				6A776E7E7DF54AEFAFDE3819 /* Literata-Medium.ttf in Resources */,
+				4328BF609CB8442493C2708A /* Literata-Regular.ttf in Resources */,
+				68EE0603EC5E493FA0161CDC /* Literata-SemiBold.ttf in Resources */,
+				A68F1E9D73944DD9A4206248 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
