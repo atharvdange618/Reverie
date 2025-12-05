@@ -7,7 +7,7 @@
  * - Empty state
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,9 @@ import {
   FlatList,
   TouchableOpacity,
   Dimensions,
-  Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, {
@@ -27,11 +28,15 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { BookOpen, Plus, Library } from 'lucide-react-native';
 
 import { useSettingsStore, useBookStore } from '../store';
 import { typography, spacing, borderRadius, shadows } from '../theme';
+import { pickPdfFile, extractTitleFromFilename } from '../utils/pdf';
+import { Dialog } from '../components/common';
 import type { RootStackParamList } from '../navigation/types';
 import type { BookWithProgress } from '../types';
+import { PdfThumbnail } from '../components/pdf';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -80,6 +85,8 @@ const BookCard = ({
 }: BookCardProps) => {
   const scale = useSharedValue(1);
   const bookColor = getBookColor(book.title, themeColors);
+  const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
+  const [thumbnailError, setThumbnailError] = useState(false);
   const pattern = getBookPattern(book.title);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -98,77 +105,95 @@ const BookCard = ({
     <Animated.View
       entering={FadeInUp.duration(400).delay(index * 100)}
       layout={Layout.springify()}
-      style={animatedStyle}
     >
-      <TouchableOpacity
-        onPress={onPress}
-        onLongPress={onLongPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={1}
-        style={[
-          styles.bookCard,
-          {
-            backgroundColor: themeColors.surface,
-            borderColor: themeColors.border,
-          },
-          shadows.sm,
-        ]}
-      >
-        {/* Book Cover */}
-        <View style={[styles.bookCover, { backgroundColor: bookColor }]}>
-          <Text style={styles.bookPattern}>
-            {pattern} {pattern} {pattern}
-          </Text>
-          <Text style={styles.bookPattern}>
-            {pattern} {pattern}
-          </Text>
-          <Text style={styles.bookPattern}>
-            {pattern} {pattern} {pattern}
-          </Text>
-        </View>
+      <Animated.View style={animatedStyle}>
+        <TouchableOpacity
+          onPress={onPress}
+          onLongPress={onLongPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          activeOpacity={1}
+          style={[
+            styles.bookCard,
+            {
+              backgroundColor: themeColors.surface,
+              borderColor: themeColors.border,
+            },
+            shadows.sm,
+          ]}
+        >
+          {/* Book Cover - PDF Thumbnail or Fallback */}
+          <View style={[styles.bookCover, { backgroundColor: bookColor }]}>
+            {!thumbnailError && (
+              <View style={styles.thumbnailContainer}>
+                <PdfThumbnail
+                  source={book.filePath}
+                  width={CARD_WIDTH}
+                  height={120}
+                  backgroundColor={bookColor}
+                  onLoad={() => setThumbnailLoaded(true)}
+                  onError={() => setThumbnailError(true)}
+                />
+              </View>
+            )}
+            {/* Fallback pattern overlay - shows while loading or on error */}
+            {(!thumbnailLoaded || thumbnailError) && (
+              <View style={styles.patternOverlay}>
+                <Text style={styles.bookPattern}>
+                  {pattern} {pattern} {pattern}
+                </Text>
+                <Text style={styles.bookPattern}>
+                  {pattern} {pattern}
+                </Text>
+                <Text style={styles.bookPattern}>
+                  {pattern} {pattern} {pattern}
+                </Text>
+              </View>
+            )}
+          </View>
 
-        {/* Book Info */}
-        <View style={styles.bookInfo}>
-          <Text
-            style={[
-              typography.ui.bodyMedium,
-              { color: themeColors.textPrimary },
-            ]}
-            numberOfLines={2}
-          >
-            {book.title}
-          </Text>
-
-          {/* Progress */}
-          <View style={styles.progressRow}>
-            <View
-              style={[
-                styles.progressTrack,
-                { backgroundColor: themeColors.divider },
-              ]}
-            >
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    backgroundColor: bookColor,
-                    width: `${book.progress || 0}%`,
-                  },
-                ]}
-              />
-            </View>
+          {/* Book Info */}
+          <View style={styles.bookInfo}>
             <Text
               style={[
-                typography.ui.caption,
-                { color: themeColors.textSecondary },
+                typography.ui.bodyMedium,
+                { color: themeColors.textPrimary },
               ]}
+              numberOfLines={2}
             >
-              {book.progress || 0}%
+              {book.title}
             </Text>
+
+            {/* Progress */}
+            <View style={styles.progressRow}>
+              <View
+                style={[
+                  styles.progressTrack,
+                  { backgroundColor: themeColors.divider },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      backgroundColor: bookColor,
+                      width: `${book.progress || 0}%`,
+                    },
+                  ]}
+                />
+              </View>
+              <Text
+                style={[
+                  typography.ui.caption,
+                  { color: themeColors.textSecondary },
+                ]}
+              >
+                {book.progress || 0}%
+              </Text>
+            </View>
           </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -176,13 +201,54 @@ const BookCard = ({
 export const LibraryScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { themeColors } = useSettingsStore();
-  const { books, deleteBook, isLoading } = useBookStore();
+  const { books, deleteBook, addBook, isLoading } = useBookStore();
+  const [isImporting, setIsImporting] = useState(false);
+  const [dialog, setDialog] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    buttons: Array<{
+      text: string;
+      onPress?: () => void;
+      style?: 'default' | 'cancel' | 'destructive';
+    }>;
+  }>({ visible: false, title: '', message: '', buttons: [] });
 
-  const handleAddBook = () => {
-    // TODO: Implement when document picker is available
-    Alert.alert('Coming Soon', 'PDF import will be available soon! 📚', [
-      { text: 'OK', style: 'default' },
-    ]);
+  const handleAddBook = async () => {
+    try {
+      setIsImporting(true);
+      const result = await pickPdfFile();
+
+      if (result) {
+        const title = extractTitleFromFilename(result.name);
+        const newBook = addBook(title, result.uri, 0);
+
+        setDialog({
+          visible: true,
+          title: 'Book Added! 📚',
+          message: `"${title}" has been added to your library.`,
+          buttons: [
+            { text: 'OK', style: 'cancel' },
+            {
+              text: 'Open Now',
+              style: 'default',
+              onPress: () =>
+                navigation.navigate('Reader', { bookId: newBook.id }),
+            },
+          ],
+        });
+      }
+    } catch (error: any) {
+      setDialog({
+        visible: true,
+        title: 'Import Failed',
+        message:
+          error?.message || 'Could not import the PDF file. Please try again.',
+        buttons: [{ text: 'OK', style: 'default' }],
+      });
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   const handleOpenBook = (book: BookWithProgress) => {
@@ -190,10 +256,11 @@ export const LibraryScreen = () => {
   };
 
   const handleDeleteBook = (book: BookWithProgress) => {
-    Alert.alert(
-      'Delete Book',
-      `Are you sure you want to delete "${book.title}"? This will remove all your annotations.`,
-      [
+    setDialog({
+      visible: true,
+      title: 'Delete Book',
+      message: `Are you sure you want to delete "${book.title}"? This will remove all your annotations.`,
+      buttons: [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
@@ -201,7 +268,7 @@ export const LibraryScreen = () => {
           onPress: () => deleteBook(book.id),
         },
       ],
-    );
+    });
   };
 
   const renderBook = ({
@@ -222,9 +289,12 @@ export const LibraryScreen = () => {
 
   const renderHeader = () => (
     <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
-      <Text style={[typography.ui.h2, { color: themeColors.textPrimary }]}>
-        Your Library 📚
-      </Text>
+      <View style={styles.headerRow}>
+        <Text style={[typography.ui.h2, { color: themeColors.textPrimary }]}>
+          Your Library
+        </Text>
+        <Library size={24} color={themeColors.accentPrimary} />
+      </View>
       <Text
         style={[
           typography.ui.body,
@@ -249,11 +319,15 @@ export const LibraryScreen = () => {
         },
       ]}
     >
-      <Text style={styles.emptyEmoji}>📖</Text>
+      <BookOpen size={64} color={themeColors.textSecondary} />
       <Text
         style={[
           typography.ui.h3,
-          { color: themeColors.textPrimary, textAlign: 'center' },
+          {
+            color: themeColors.textPrimary,
+            textAlign: 'center',
+            marginTop: spacing.lg,
+          },
         ]}
       >
         No books yet
@@ -278,16 +352,25 @@ export const LibraryScreen = () => {
           { backgroundColor: themeColors.accentPrimary },
         ]}
       >
-        <Text style={[typography.ui.button, { color: '#FFFFFF' }]}>
-          + Add Book
-        </Text>
+        <View style={styles.addButtonContent}>
+          <Plus size={18} color="#FFFFFF" />
+          <Text
+            style={[
+              typography.ui.button,
+              { color: '#FFFFFF', marginLeft: spacing.xs },
+            ]}
+          >
+            Add
+          </Text>
+        </View>
       </TouchableOpacity>
     </Animated.View>
   );
 
   return (
-    <View
+    <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
+      edges={['top']}
     >
       <FlatList
         data={books}
@@ -306,17 +389,31 @@ export const LibraryScreen = () => {
         <Animated.View entering={FadeIn.duration(400).delay(300)}>
           <TouchableOpacity
             onPress={handleAddBook}
+            disabled={isImporting}
             style={[
               styles.fab,
               { backgroundColor: themeColors.accentPrimary },
               shadows.lg,
             ]}
           >
-            <Text style={styles.fabIcon}>+</Text>
+            {isImporting ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Plus size={28} color="#FFFFFF" />
+            )}
           </TouchableOpacity>
         </Animated.View>
       )}
-    </View>
+
+      {/* Custom Dialog */}
+      <Dialog
+        visible={dialog.visible}
+        title={dialog.title}
+        message={dialog.message}
+        buttons={dialog.buttons}
+        onDismiss={() => setDialog({ ...dialog, visible: false })}
+      />
+    </SafeAreaView>
   );
 };
 
@@ -330,7 +427,15 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.xl,
-    marginTop: spacing.md,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  addButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   row: {
     justifyContent: 'space-between',
@@ -347,6 +452,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     opacity: 0.9,
+    position: 'relative',
+  },
+  thumbnailContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  patternOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bookPattern: {
     fontSize: 16,

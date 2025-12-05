@@ -9,31 +9,39 @@
  * - Page navigation
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, ReactNode } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   StatusBar,
-  SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Animated, {
-  FadeIn,
-  FadeOut,
-  SlideInUp,
-  SlideOutDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
-
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import {
+  ArrowLeft,
+  Bookmark,
+  BookmarkCheck,
+  Highlighter,
+  Pencil,
+  Smile,
+  Volume2,
+  AlertTriangle,
+  BookOpen,
+} from 'lucide-react-native';
 import { useSettingsStore, useBookStore, useAnnotationStore } from '../store';
 import { typography, spacing, borderRadius, shadows } from '../theme';
+import { PdfViewer } from '../components/pdf';
+import { BookReader } from '../components/reader';
 import type { RootStackParamList } from '../navigation/types';
+import {
+  getReadingProgress,
+  saveReadingProgress,
+} from '../db/queries/readingProgress';
 
 type ReaderRouteProp = RouteProp<RootStackParamList, 'Reader'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -48,7 +56,7 @@ const ToolButton = ({
   onPress,
   themeColors,
 }: {
-  icon: string;
+  icon: ReactNode;
   isActive: boolean;
   onPress: () => void;
   themeColors: any;
@@ -65,15 +73,16 @@ const ToolButton = ({
       },
     ]}
   >
-    <Text style={styles.toolIcon}>{icon}</Text>
+    {icon}
   </TouchableOpacity>
 );
 
 export const ReaderScreen = () => {
   const route = useRoute<ReaderRouteProp>();
   const navigation = useNavigation<NavigationProp>();
-  const { themeColors } = useSettingsStore();
-  const { loadBook, currentBook, updateProgress } = useBookStore();
+  const { themeColors, readingMode, theme } = useSettingsStore();
+  const { loadBook, currentBook, updateProgress, updateTotalPages } =
+    useBookStore();
   const { loadAnnotations, toggleBookmark, isBookmarked } =
     useAnnotationStore();
 
@@ -82,37 +91,42 @@ export const ReaderScreen = () => {
   // State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [showControls, setShowControls] = useState(true);
   const [activeTool, setActiveTool] = useState<AnnotationTool>('none');
   const [isLoading, setIsLoading] = useState(true);
-
-  // Animations
-  const controlsOpacity = useSharedValue(1);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [controlsVisible, setControlsVisible] = useState(true);
 
   // Load book and annotations
   useEffect(() => {
     const book = loadBook(bookId);
     if (book) {
-      setCurrentPage(book.currentPage || 1);
-      setTotalPages(book.totalPages);
+      const progress = getReadingProgress(bookId);
+      if (progress && progress.readingMode === 'pdf') {
+        setCurrentPage(progress.currentPage);
+        setTotalPages(progress.totalPages);
+      } else {
+        setCurrentPage(book.currentPage || 1);
+        setTotalPages(book.totalPages);
+      }
       loadAnnotations(bookId);
     }
     setIsLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookId]);
-
-  // Toggle controls visibility
-  const toggleControls = useCallback(() => {
-    setShowControls(prev => !prev);
-    controlsOpacity.value = withTiming(showControls ? 0 : 1, { duration: 200 });
-  }, [showControls]);
 
   // Handle page change
   const handlePageChange = useCallback(
-    (page: number) => {
+    (page: number, total?: number) => {
       setCurrentPage(page);
+      const updatedTotal = total || totalPages;
+      if (total) {
+        setTotalPages(total);
+      }
       updateProgress(bookId, page);
+
+      saveReadingProgress(bookId, page, 0, updatedTotal, 'pdf');
     },
-    [bookId, updateProgress],
+    [bookId, updateProgress, totalPages],
   );
 
   // Handle bookmark toggle
@@ -128,18 +142,40 @@ export const ReaderScreen = () => {
     [activeTool],
   );
 
+  // Handle PDF load complete
+  const handleLoadComplete = useCallback(
+    (total: number) => {
+      setTotalPages(total);
+      if (
+        currentBook &&
+        (currentBook.totalPages === 0 || currentBook.totalPages !== total)
+      ) {
+        updateTotalPages(bookId, total);
+      }
+      setIsLoading(false);
+    },
+    [currentBook, bookId, updateTotalPages],
+  );
+
+  // Handle PDF error
+  const handlePdfError = useCallback((error: any) => {
+    setPdfError(error?.message || 'Unknown error loading PDF');
+    setIsLoading(false);
+  }, []);
+
   // Go back
   const handleBack = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
 
+  // Toggle controls visibility
+  const handleToggleControls = useCallback(() => {
+    setControlsVisible(prev => !prev);
+  }, []);
+
   // Calculate progress
   const progress =
     totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0;
-
-  const controlsAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: controlsOpacity.value,
-  }));
 
   if (isLoading) {
     return (
@@ -170,253 +206,270 @@ export const ReaderScreen = () => {
           { backgroundColor: themeColors.background },
         ]}
       >
-        <Text style={styles.errorEmoji}>📖</Text>
-        <Text style={[typography.ui.h3, { color: themeColors.textPrimary }]}>
+        <BookOpen size={64} color={themeColors.textSecondary} />
+        <Text
+          style={[
+            typography.ui.h3,
+            { color: themeColors.textPrimary, marginTop: spacing.md },
+          ]}
+        >
           Book not found
         </Text>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Text
-            style={[typography.ui.button, { color: themeColors.accentPrimary }]}
-          >
-            ← Go Back
-          </Text>
+          <View style={styles.backButtonContent}>
+            <ArrowLeft size={16} color={themeColors.accentPrimary} />
+            <Text
+              style={[
+                typography.ui.button,
+                { color: themeColors.accentPrimary, marginLeft: spacing.xs },
+              ]}
+            >
+              Go Back
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View
+    <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
+      edges={['top', 'bottom']}
     >
-      <StatusBar hidden={!showControls} />
+      <StatusBar hidden={!controlsVisible} />
 
-      {/* PDF Viewer Placeholder */}
-      <TouchableOpacity
-        style={styles.readerArea}
-        onPress={toggleControls}
-        activeOpacity={1}
-      >
-        <View
+      {/* Top Bar - Toggleable */}
+      {controlsVisible && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
           style={[
-            styles.pdfPlaceholder,
-            { backgroundColor: themeColors.surface },
+            styles.topBar,
+            {
+              backgroundColor: themeColors.surface,
+              borderBottomColor: themeColors.border,
+            },
           ]}
         >
-          <Text style={styles.pdfEmoji}>📄</Text>
-          <Text style={[typography.ui.h3, { color: themeColors.textPrimary }]}>
-            PDF Viewer
+        <TouchableOpacity onPress={handleBack} style={styles.topBarButton}>
+          <ArrowLeft size={24} color={themeColors.textPrimary} />
+        </TouchableOpacity>
+
+        <View style={styles.topBarCenter}>
+          <Text
+            style={[
+              typography.ui.bodyMedium,
+              { color: themeColors.textPrimary },
+            ]}
+            numberOfLines={1}
+          >
+            {currentBook.title}
           </Text>
           <Text
             style={[
-              typography.ui.body,
-              { color: themeColors.textSecondary, marginTop: spacing.sm },
+              typography.ui.caption,
+              { color: themeColors.textSecondary },
             ]}
           >
             Page {currentPage} of {totalPages}
           </Text>
-          <Text
-            style={[
-              typography.ui.small,
-              {
-                color: themeColors.textSecondary,
-                marginTop: spacing.lg,
-                textAlign: 'center',
-              },
-            ]}
-          >
-            (PDF rendering will be available{'\n'}when react-native-pdf builds
-            successfully)
-          </Text>
         </View>
-      </TouchableOpacity>
 
-      {/* Top Controls */}
-      {showControls && (
-        <Animated.View
-          entering={SlideInUp.duration(200)}
-          exiting={SlideOutDown.duration(200)}
-          style={[
-            styles.topControls,
-            { backgroundColor: themeColors.surface },
-            shadows.md,
-          ]}
-        >
-          <SafeAreaView style={styles.topControlsInner}>
-            <TouchableOpacity onPress={handleBack} style={styles.backTouchable}>
-              <Text
-                style={[
-                  typography.ui.body,
-                  { color: themeColors.accentPrimary },
-                ]}
-              >
-                ← Back
-              </Text>
-            </TouchableOpacity>
-
-            <View style={styles.titleContainer}>
-              <Text
-                style={[
-                  typography.ui.bodyMedium,
-                  { color: themeColors.textPrimary },
-                ]}
-                numberOfLines={1}
-              >
-                {currentBook.title}
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              onPress={handleBookmark}
-              style={styles.bookmarkTouchable}
-            >
-              <Text style={styles.bookmarkIcon}>
-                {isBookmarked(currentPage) ? '🔖' : '📑'}
-              </Text>
-            </TouchableOpacity>
-          </SafeAreaView>
+        <TouchableOpacity onPress={handleBookmark} style={styles.topBarButton}>
+          {isBookmarked(currentPage) ? (
+            <BookmarkCheck size={24} color={themeColors.accentPrimary} />
+          ) : (
+            <Bookmark size={24} color={themeColors.textSecondary} />
+          )}
+        </TouchableOpacity>
         </Animated.View>
       )}
 
-      {/* Bottom Controls */}
-      {showControls && (
-        <Animated.View
-          entering={SlideInUp.duration(200)}
-          exiting={SlideOutDown.duration(200)}
-          style={[
-            styles.bottomControls,
-            { backgroundColor: themeColors.surface },
-            shadows.md,
-          ]}
-        >
-          {/* Progress bar */}
-          <View style={styles.progressSection}>
-            <View
-              style={[
-                styles.progressTrack,
-                { backgroundColor: themeColors.divider },
-              ]}
-            >
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    backgroundColor: themeColors.accentPrimary,
-                    width: `${progress}%`,
-                  },
-                ]}
-              />
-            </View>
+      {/* PDF Viewer */}
+      <View style={styles.readerArea}>
+        {pdfError ? (
+          <View
+            style={[
+              styles.errorState,
+              { backgroundColor: themeColors.surface },
+            ]}
+          >
+            <AlertTriangle size={48} color={themeColors.textSecondary} />
             <Text
               style={[
-                typography.ui.small,
+                typography.ui.h3,
+                { color: themeColors.textPrimary, marginTop: spacing.md },
+              ]}
+            >
+              Failed to load PDF
+            </Text>
+            <Text
+              style={[
+                typography.ui.body,
+                styles.errorText,
                 { color: themeColors.textSecondary },
               ]}
             >
-              {progress}%
+              {pdfError}
             </Text>
           </View>
+        ) : theme === 'dark' ? (
+          <BookReader
+            filePath={currentBook.filePath}
+            bookId={
+              typeof currentBook.id === 'string'
+                ? parseInt(currentBook.id, 10)
+                : currentBook.id
+            }
+            currentPage={currentPage}
+            onPageChanged={handlePageChange}
+            onLoadComplete={handleLoadComplete}
+            enableDarkMode={true}
+            onToggleControls={handleToggleControls}
+          />
+        ) : (
+          <PdfViewer
+            source={currentBook.filePath}
+            page={currentPage}
+            onPageChange={handlePageChange}
+            onLoadComplete={handleLoadComplete}
+            onError={handlePdfError}
+            readingMode={readingMode}
+            backgroundColor={themeColors.background}
+          />
+        )}
+      </View>
 
-          {/* Annotation Tools */}
-          <View style={styles.toolsSection}>
-            <ToolButton
-              icon="🖍️"
-              isActive={activeTool === 'highlight'}
-              onPress={() => handleToolSelect('highlight')}
-              themeColors={themeColors}
-            />
-            <ToolButton
-              icon="✏️"
-              isActive={activeTool === 'freehand'}
-              onPress={() => handleToolSelect('freehand')}
-              themeColors={themeColors}
-            />
-            <ToolButton
-              icon="😊"
-              isActive={activeTool === 'emoji'}
-              onPress={() => handleToolSelect('emoji')}
-              themeColors={themeColors}
-            />
-            <ToolButton
-              icon="🔊"
-              isActive={false}
-              onPress={() => {
-                // TODO: TTS toggle
-              }}
-              themeColors={themeColors}
+      {/* Bottom Toolbar - Toggleable */}
+      {controlsVisible && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={[
+            styles.bottomToolbar,
+            {
+              backgroundColor: themeColors.surface,
+              borderTopColor: themeColors.border,
+            },
+          ]}
+        >
+        {/* Progress indicator */}
+        <View style={styles.progressContainer}>
+          <View
+            style={[
+              styles.progressBar,
+              { backgroundColor: themeColors.divider },
+            ]}
+          >
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  backgroundColor: themeColors.accentPrimary,
+                  width: `${progress}%`,
+                },
+              ]}
             />
           </View>
+          <Text
+            style={[typography.ui.small, { color: themeColors.textSecondary }]}
+          >
+            {progress}%
+          </Text>
+        </View>
 
-          {/* Page Navigation */}
-          <View style={styles.pageNavSection}>
-            <TouchableOpacity
-              onPress={() => handlePageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage <= 1}
-              style={[
-                styles.navButton,
-                { opacity: currentPage <= 1 ? 0.3 : 1 },
-              ]}
-            >
-              <Text
-                style={[
-                  typography.ui.body,
-                  { color: themeColors.accentPrimary },
-                ]}
-              >
-                ◀ Prev
-              </Text>
-            </TouchableOpacity>
-
-            <Text
-              style={[
-                typography.ui.bodyMedium,
-                { color: themeColors.textPrimary },
-              ]}
-            >
-              {currentPage} / {totalPages}
-            </Text>
-
-            <TouchableOpacity
-              onPress={() =>
-                handlePageChange(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage >= totalPages}
-              style={[
-                styles.navButton,
-                { opacity: currentPage >= totalPages ? 0.3 : 1 },
-              ]}
-            >
-              <Text
-                style={[
-                  typography.ui.body,
-                  { color: themeColors.accentPrimary },
-                ]}
-              >
-                Next ▶
-              </Text>
-            </TouchableOpacity>
-          </View>
+        {/* Annotation Tools */}
+        <View style={styles.toolsRow}>
+          <ToolButton
+            icon={
+              <Highlighter
+                size={22}
+                color={
+                  activeTool === 'highlight'
+                    ? '#FFFFFF'
+                    : themeColors.textSecondary
+                }
+              />
+            }
+            isActive={activeTool === 'highlight'}
+            onPress={() => handleToolSelect('highlight')}
+            themeColors={themeColors}
+          />
+          <ToolButton
+            icon={
+              <Pencil
+                size={22}
+                color={
+                  activeTool === 'freehand'
+                    ? '#FFFFFF'
+                    : themeColors.textSecondary
+                }
+              />
+            }
+            isActive={activeTool === 'freehand'}
+            onPress={() => handleToolSelect('freehand')}
+            themeColors={themeColors}
+          />
+          <ToolButton
+            icon={
+              <Smile
+                size={22}
+                color={
+                  activeTool === 'emoji' ? '#FFFFFF' : themeColors.textSecondary
+                }
+              />
+            }
+            isActive={activeTool === 'emoji'}
+            onPress={() => handleToolSelect('emoji')}
+            themeColors={themeColors}
+          />
+          <ToolButton
+            icon={<Volume2 size={22} color={themeColors.textSecondary} />}
+            isActive={false}
+            onPress={() => {
+              // TODO: TTS toggle
+            }}
+            themeColors={themeColors}
+          />
+        </View>
         </Animated.View>
       )}
 
       {/* Active Tool Indicator */}
-      {activeTool !== 'none' && showControls && (
+      {activeTool !== 'none' && (
         <Animated.View
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(200)}
           style={[
             styles.toolIndicator,
             { backgroundColor: themeColors.accentPrimary },
+            shadows.lg,
           ]}
         >
-          <Text style={styles.toolIndicatorText}>
-            {activeTool === 'highlight' && '🖍️ Highlight Mode'}
-            {activeTool === 'freehand' && '✏️ Drawing Mode'}
-            {activeTool === 'emoji' && '😊 Emoji Mode'}
-          </Text>
+          <View style={styles.toolIndicatorContent}>
+            {activeTool === 'highlight' && (
+              <>
+                <Highlighter size={16} color="#FFFFFF" />
+                <Text style={styles.toolIndicatorText}>Highlight Mode</Text>
+              </>
+            )}
+            {activeTool === 'freehand' && (
+              <>
+                <Pencil size={16} color="#FFFFFF" />
+                <Text style={styles.toolIndicatorText}>Drawing Mode</Text>
+              </>
+            )}
+            {activeTool === 'emoji' && (
+              <>
+                <Smile size={16} color="#FFFFFF" />
+                <Text style={styles.toolIndicatorText}>Emoji Mode</Text>
+              </>
+            )}
+          </View>
         </Animated.View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -435,75 +488,64 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.xl,
   },
-  errorEmoji: {
-    fontSize: 64,
-    marginBottom: spacing.lg,
-  },
   backButton: {
     marginTop: spacing.xl,
     padding: spacing.md,
   },
+  backButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+  },
+  topBarButton: {
+    padding: spacing.sm,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topBarCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+  },
   readerArea: {
     flex: 1,
   },
-  pdfPlaceholder: {
+  errorState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     margin: spacing.md,
     borderRadius: borderRadius.lg,
+    padding: spacing.xl,
   },
-  pdfEmoji: {
-    fontSize: 64,
-    marginBottom: spacing.lg,
+  errorText: {
+    marginTop: spacing.sm,
+    textAlign: 'center',
   },
-  topControls: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+  bottomToolbar: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
   },
-  topControlsInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: spacing.md,
-  },
-  backTouchable: {
-    padding: spacing.sm,
-  },
-  titleContainer: {
-    flex: 1,
-    marginHorizontal: spacing.md,
-    alignItems: 'center',
-  },
-  bookmarkTouchable: {
-    padding: spacing.sm,
-  },
-  bookmarkIcon: {
-    fontSize: 24,
-  },
-  bottomControls: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: spacing.md,
-    paddingBottom: spacing.xl,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-  },
-  progressSection: {
+  progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     marginBottom: spacing.md,
   },
-  progressTrack: {
+  progressBar: {
     flex: 1,
-    height: 4,
+    height: 3,
     borderRadius: borderRadius.full,
     overflow: 'hidden',
   },
@@ -511,38 +553,32 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: borderRadius.full,
   },
-  toolsSection: {
+  toolsRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.md,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   toolButton: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
+    flex: 1,
+    height: 52,
+    borderRadius: borderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-  },
-  toolIcon: {
-    fontSize: 20,
-  },
-  pageNavSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  navButton: {
-    padding: spacing.sm,
+    borderWidth: 1.5,
   },
   toolIndicator: {
     position: 'absolute',
-    top: 100,
+    top: 80,
     alignSelf: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
     borderRadius: borderRadius.full,
+  },
+  toolIndicatorContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   toolIndicatorText: {
     color: '#FFFFFF',

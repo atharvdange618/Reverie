@@ -102,6 +102,13 @@ export const updateBookProgress = (id: string, currentPage: number): void => {
 };
 
 /**
+ * Update book total pages (called when PDF is first loaded)
+ */
+export const updateBookTotalPages = (id: string, totalPages: number): void => {
+  executeUpdate('UPDATE books SET totalPages = ? WHERE id = ?', [totalPages, id]);
+};
+
+/**
  * Update book title
  */
 export const updateBookTitle = (id: string, title: string): void => {

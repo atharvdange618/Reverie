@@ -8,12 +8,11 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-
 import { RootStackParamList } from './types';
 import { MainTabNavigator } from './MainTabNavigator';
 import { useSettingsStore, useBookStore } from '../store';
 import { getDatabase } from '../db';
-import { OnboardingScreen } from '../screens';
+import { OnboardingScreen, ReaderScreen } from '../screens';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -90,13 +89,8 @@ export const AppNavigator = () => {
           options={{
             animation: 'slide_from_right',
           }}
-        >
-          {() => {
-            // Lazy load ReaderScreen to avoid circular deps
-            const { ReaderScreen } = require('../screens');
-            return <ReaderScreen />;
-          }}
-        </Stack.Screen>
+          component={ReaderScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

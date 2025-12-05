@@ -6,7 +6,8 @@
 
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
+import { Home, Library, Settings } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MainTabParamList } from './types';
 import { useSettingsStore } from '../store';
@@ -17,19 +18,20 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 // Tab bar icons
 const HomeIcon = ({ color, size }: { color: string; size: number }) => (
-  <Text style={{ fontSize: size, color }}>🏠</Text>
+  <Home color={color} size={size} />
 );
 
 const LibraryIcon = ({ color, size }: { color: string; size: number }) => (
-  <Text style={{ fontSize: size, color }}>📚</Text>
+  <Library color={color} size={size} />
 );
 
 const SettingsIcon = ({ color, size }: { color: string; size: number }) => (
-  <Text style={{ fontSize: size, color }}>⚙️</Text>
+  <Settings color={color} size={size} />
 );
 
 export const MainTabNavigator = () => {
   const { themeColors } = useSettingsStore();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
@@ -39,8 +41,8 @@ export const MainTabNavigator = () => {
           backgroundColor: themeColors.surface,
           borderTopColor: themeColors.border,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: spacing.sm,
+          height: 65 + insets.bottom,
+          paddingBottom: insets.bottom + spacing.xs,
           paddingTop: spacing.sm,
         },
         tabBarActiveTintColor: themeColors.accentPrimary,

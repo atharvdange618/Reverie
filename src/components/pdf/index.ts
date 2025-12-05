@@ -4,7 +4,7 @@
  * Components related to PDF viewing
  */
 
-// Export components as they are created
-// export { PdfViewer } from './PdfViewer';
+export { PdfViewer } from './PdfViewer';
+export { PdfThumbnail } from './PdfThumbnail';
 // export { PageIndicator } from './PageIndicator';
 // export { ZoomControls } from './ZoomControls';

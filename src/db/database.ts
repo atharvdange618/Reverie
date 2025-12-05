@@ -119,6 +119,32 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
     );
   `);
 
+  // Extracted text cache table (for BookReader)
+  db.execute(`
+    CREATE TABLE IF NOT EXISTS extracted_text (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bookId TEXT NOT NULL,
+      pageNumber INTEGER NOT NULL,
+      text TEXT NOT NULL,
+      extractedAt TEXT NOT NULL,
+      UNIQUE(bookId, pageNumber),
+      FOREIGN KEY (bookId) REFERENCES books(id) ON DELETE CASCADE
+    );
+  `);
+
+  // Reading progress table (for both PDF and Book modes)
+  db.execute(`
+    CREATE TABLE IF NOT EXISTS reading_progress (
+      bookId TEXT PRIMARY KEY,
+      currentPage INTEGER NOT NULL DEFAULT 1,
+      scrollPosition REAL DEFAULT 0,
+      totalPages INTEGER DEFAULT 0,
+      lastReadAt TEXT NOT NULL,
+      readingMode TEXT DEFAULT 'pdf',
+      FOREIGN KEY (bookId) REFERENCES books(id) ON DELETE CASCADE
+    );
+  `);
+
   // Create indexes for better query performance
   db.execute(`
     CREATE INDEX IF NOT EXISTS idx_bookmarks_bookId ON bookmarks(bookId);
@@ -131,6 +157,12 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
   `);
   db.execute(`
     CREATE INDEX IF NOT EXISTS idx_emoji_reactions_bookId ON emoji_reactions(bookId);
+  `);
+  db.execute(`
+    CREATE INDEX IF NOT EXISTS idx_extracted_text_bookId ON extracted_text(bookId);
+  `);
+  db.execute(`
+    CREATE INDEX IF NOT EXISTS idx_extracted_text_page ON extracted_text(bookId, pageNumber);
   `);
 
   console.log('✅ Database tables initialized');

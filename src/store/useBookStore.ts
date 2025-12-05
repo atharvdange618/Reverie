@@ -12,6 +12,7 @@ import {
   getLastOpenedBook,
   addBook as dbAddBook,
   updateBookProgress as dbUpdateProgress,
+  updateBookTotalPages as dbUpdateTotalPages,
   updateBookTitle as dbUpdateTitle,
   deleteBook as dbDeleteBook,
   getReadingStats,
@@ -41,6 +42,7 @@ interface BookState {
     totalPages: number,
   ) => BookWithProgress;
   updateProgress: (id: string, page: number) => void;
+  updateTotalPages: (id: string, totalPages: number) => void;
   updateTitle: (id: string, title: string) => void;
   deleteBook: (id: string) => void;
   setCurrentBook: (book: BookWithProgress | null) => void;
@@ -140,6 +142,28 @@ export const useBookStore = create<BookState>((set, get) => ({
     });
 
     get().refreshStats();
+  },
+
+  // Update total pages (called when PDF is first loaded)
+  updateTotalPages: (id, totalPages) => {
+    dbUpdateTotalPages(id, totalPages);
+
+    set(state => {
+      const updateBook = (book: BookWithProgress): BookWithProgress => {
+        if (book.id !== id) return book;
+        const progress =
+          totalPages > 0 ? Math.round((book.currentPage / totalPages) * 100) : 0;
+        return { ...book, totalPages, progress };
+      };
+
+      return {
+        books: state.books.map(updateBook),
+        currentBook: state.currentBook ? updateBook(state.currentBook) : null,
+        lastOpenedBook: state.lastOpenedBook
+          ? updateBook(state.lastOpenedBook)
+          : null,
+      };
+    });
   },
 
   // Update book title

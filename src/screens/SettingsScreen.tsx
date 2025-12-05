@@ -18,7 +18,20 @@ import {
   TouchableOpacity,
   Switch,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import {
+  Settings,
+  Volume2,
+  Music,
+  VolumeX,
+  Heart,
+  Sparkles,
+  Sun,
+  Moon,
+  Scroll,
+  Type,
+} from 'lucide-react-native';
 
 import { useSettingsStore } from '../store';
 import { typography, spacing, borderRadius, colors } from '../theme';
@@ -52,7 +65,7 @@ const SettingsRow = ({
   onPress,
   themeColors,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   subtitle?: string;
   right?: React.ReactNode;
@@ -68,7 +81,7 @@ const SettingsRow = ({
     ]}
     activeOpacity={onPress ? 0.7 : 1}
   >
-    <Text style={styles.rowIcon}>{icon}</Text>
+    <View style={styles.rowIcon}>{icon}</View>
     <View style={styles.rowContent}>
       <Text style={[typography.ui.body, { color: themeColors.textPrimary }]}>
         {title}
@@ -99,7 +112,7 @@ const ThemeButton = ({
 }: {
   mode: ThemeMode;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   isSelected: boolean;
   onPress: () => void;
   themeColors: any;
@@ -126,7 +139,7 @@ const ThemeButton = ({
           { backgroundColor: previewColors.surface },
         ]}
       >
-        <Text style={styles.themeIcon}>{icon}</Text>
+        {icon}
       </View>
       <Text
         style={[
@@ -220,309 +233,324 @@ export const SettingsScreen = () => {
   } = useSettingsStore();
 
   return (
-    <ScrollView
+    <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
+      edges={['top']}
     >
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
-        <Text style={[typography.ui.h2, { color: themeColors.textPrimary }]}>
-          Settings ⚙️
-        </Text>
-        <Text
-          style={[
-            typography.ui.body,
-            { color: themeColors.textSecondary, marginTop: spacing.xs },
-          ]}
-        >
-          Make it yours
-        </Text>
-      </Animated.View>
-
-      {/* Theme Section */}
-      <Animated.View entering={FadeInDown.duration(400).delay(100)}>
-        <SectionHeader title="APPEARANCE" themeColors={themeColors} />
-        <View style={styles.themeContainer}>
-          <ThemeButton
-            mode="light"
-            label="Light"
-            icon="☀️"
-            isSelected={themeMode === 'light'}
-            onPress={() => setTheme('light')}
-            themeColors={themeColors}
-          />
-          <ThemeButton
-            mode="dark"
-            label="Dark"
-            icon="🌙"
-            isSelected={themeMode === 'dark'}
-            onPress={() => setTheme('dark')}
-            themeColors={themeColors}
-          />
-          <ThemeButton
-            mode="sepia"
-            label="Sepia"
-            icon="📜"
-            isSelected={themeMode === 'sepia'}
-            onPress={() => setTheme('sepia')}
-            themeColors={themeColors}
-          />
-        </View>
-      </Animated.View>
-
-      {/* Reader Section */}
-      <Animated.View entering={FadeInDown.duration(400).delay(200)}>
-        <SectionHeader title="READER" themeColors={themeColors} />
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: themeColors.surface,
-              borderColor: themeColors.border,
-            },
-          ]}
-        >
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardIcon}>🔤</Text>
+      <ScrollView
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
+          <View style={styles.headerRow}>
             <Text
-              style={[
-                typography.ui.bodyMedium,
-                { color: themeColors.textPrimary },
-              ]}
+              style={[typography.ui.h2, { color: themeColors.textPrimary }]}
             >
-              Font Size
+              Settings
             </Text>
+            <Settings size={24} color={themeColors.textSecondary} />
           </View>
-          <FontSizeSelector themeColors={themeColors} />
-        </View>
-      </Animated.View>
+          <Text
+            style={[
+              typography.ui.body,
+              { color: themeColors.textSecondary, marginTop: spacing.xs },
+            ]}
+          >
+            Make it yours
+          </Text>
+        </Animated.View>
 
-      {/* Audio Section */}
-      <Animated.View entering={FadeInDown.duration(400).delay(300)}>
-        <SectionHeader title="AUDIO" themeColors={themeColors} />
-
-        <SettingsRow
-          icon="🔊"
-          title="Text-to-Speech"
-          subtitle="Read pages aloud"
-          themeColors={themeColors}
-          right={
-            <Switch
-              value={ttsEnabled}
-              onValueChange={setTtsEnabled}
-              trackColor={{
-                false: themeColors.border,
-                true: themeColors.accentSecondary,
-              }}
-              thumbColor={
-                ttsEnabled ? themeColors.accentPrimary : themeColors.surface
-              }
+        {/* Theme Section */}
+        <Animated.View entering={FadeInDown.duration(400).delay(100)}>
+          <SectionHeader title="APPEARANCE" themeColors={themeColors} />
+          <View style={styles.themeContainer}>
+            <ThemeButton
+              mode="light"
+              label="Light"
+              icon={<Sun size={20} color={colors.light.textPrimary} />}
+              isSelected={themeMode === 'light'}
+              onPress={() => setTheme('light')}
+              themeColors={themeColors}
             />
-          }
-        />
+            <ThemeButton
+              mode="dark"
+              label="Dark"
+              icon={<Moon size={20} color={colors.dark.textPrimary} />}
+              isSelected={themeMode === 'dark'}
+              onPress={() => setTheme('dark')}
+              themeColors={themeColors}
+            />
+            <ThemeButton
+              mode="sepia"
+              label="Sepia"
+              icon={<Scroll size={20} color={colors.sepia.textPrimary} />}
+              isSelected={themeMode === 'sepia'}
+              onPress={() => setTheme('sepia')}
+              themeColors={themeColors}
+            />
+          </View>
+        </Animated.View>
 
-        {ttsEnabled && (
+        {/* Reader Section */}
+        <Animated.View entering={FadeInDown.duration(400).delay(200)}>
+          <SectionHeader title="READER" themeColors={themeColors} />
           <View
             style={[
-              styles.subCard,
+              styles.card,
               {
                 backgroundColor: themeColors.surface,
                 borderColor: themeColors.border,
               },
             ]}
           >
-            <Text
-              style={[
-                typography.ui.small,
-                { color: themeColors.textSecondary, marginBottom: spacing.sm },
-              ]}
-            >
-              Reading Speed: {ttsRate.toFixed(1)}x
-            </Text>
-            <View style={styles.speedButtons}>
-              {[0.5, 0.75, 1.0, 1.25, 1.5].map(rate => (
-                <TouchableOpacity
-                  key={rate}
-                  onPress={() => setTtsRate(rate)}
-                  style={[
-                    styles.speedButton,
-                    {
-                      backgroundColor:
-                        ttsRate === rate
-                          ? themeColors.accentPrimary
-                          : 'transparent',
-                      borderColor:
-                        ttsRate === rate
-                          ? themeColors.accentPrimary
-                          : themeColors.border,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      typography.ui.small,
-                      {
-                        color:
-                          ttsRate === rate
-                            ? '#FFFFFF'
-                            : themeColors.textSecondary,
-                      },
-                    ]}
-                  >
-                    {rate}x
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
-        <SettingsRow
-          icon="🎵"
-          title="Ambient Music"
-          subtitle="Soft background sounds"
-          themeColors={themeColors}
-          right={
-            <Switch
-              value={ambientMusicEnabled}
-              onValueChange={setAmbientMusicEnabled}
-              trackColor={{
-                false: themeColors.border,
-                true: themeColors.accentSecondary,
-              }}
-              thumbColor={
-                ambientMusicEnabled
-                  ? themeColors.accentPrimary
-                  : themeColors.surface
-              }
-            />
-          }
-        />
-
-        {ambientMusicEnabled && (
-          <View
-            style={[
-              styles.subCard,
-              {
-                backgroundColor: themeColors.surface,
-                borderColor: themeColors.border,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                typography.ui.small,
-                { color: themeColors.textSecondary, marginBottom: spacing.sm },
-              ]}
-            >
-              Volume: {Math.round(ambientVolume * 100)}%
-            </Text>
-            <View style={styles.volumeRow}>
-              <Text style={{ fontSize: 16 }}>🔈</Text>
-              <View
+            <View style={styles.cardHeader}>
+              <Type size={20} color={themeColors.accentPrimary} />
+              <Text
                 style={[
-                  styles.volumeTrack,
-                  { backgroundColor: themeColors.border },
+                  typography.ui.bodyMedium,
+                  { color: themeColors.textPrimary },
                 ]}
               >
-                <View
-                  style={[
-                    styles.volumeFill,
-                    {
-                      backgroundColor: themeColors.accentPrimary,
-                      width: `${ambientVolume * 100}%`,
-                    },
-                  ]}
-                />
-              </View>
-              <Text style={{ fontSize: 16 }}>🔊</Text>
+                Font Size
+              </Text>
             </View>
-            <View style={styles.volumeButtons}>
-              {[0.25, 0.5, 0.75, 1.0].map(vol => (
-                <TouchableOpacity
-                  key={vol}
-                  onPress={() => setAmbientVolume(vol)}
-                  style={[
-                    styles.volumeButton,
-                    {
-                      backgroundColor:
-                        ambientVolume === vol
-                          ? themeColors.accentSecondary
-                          : 'transparent',
-                    },
-                  ]}
-                >
-                  <Text
+            <FontSizeSelector themeColors={themeColors} />
+          </View>
+        </Animated.View>
+
+        {/* Audio Section */}
+        <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+          <SectionHeader title="AUDIO" themeColors={themeColors} />
+
+          <SettingsRow
+            icon={<Volume2 size={20} color={themeColors.accentPrimary} />}
+            title="Text-to-Speech"
+            subtitle="Read pages aloud"
+            themeColors={themeColors}
+            right={
+              <Switch
+                value={ttsEnabled}
+                onValueChange={setTtsEnabled}
+                trackColor={{
+                  false: themeColors.border,
+                  true: themeColors.accentSecondary,
+                }}
+                thumbColor={
+                  ttsEnabled ? themeColors.accentPrimary : themeColors.surface
+                }
+              />
+            }
+          />
+
+          {ttsEnabled && (
+            <View
+              style={[
+                styles.subCard,
+                {
+                  backgroundColor: themeColors.surface,
+                  borderColor: themeColors.border,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  typography.ui.small,
+                  {
+                    color: themeColors.textSecondary,
+                    marginBottom: spacing.sm,
+                  },
+                ]}
+              >
+                Reading Speed: {ttsRate.toFixed(1)}x
+              </Text>
+              <View style={styles.speedButtons}>
+                {[0.5, 0.75, 1.0, 1.25, 1.5].map(rate => (
+                  <TouchableOpacity
+                    key={rate}
+                    onPress={() => setTtsRate(rate)}
                     style={[
-                      typography.ui.small,
+                      styles.speedButton,
                       {
-                        color:
-                          ambientVolume === vol
-                            ? themeColors.textPrimary
-                            : themeColors.textSecondary,
+                        backgroundColor:
+                          ttsRate === rate
+                            ? themeColors.accentPrimary
+                            : 'transparent',
+                        borderColor:
+                          ttsRate === rate
+                            ? themeColors.accentPrimary
+                            : themeColors.border,
                       },
                     ]}
                   >
-                    {Math.round(vol * 100)}%
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        typography.ui.small,
+                        {
+                          color:
+                            ttsRate === rate
+                              ? '#FFFFFF'
+                              : themeColors.textSecondary,
+                        },
+                      ]}
+                    >
+                      {rate}x
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          </View>
-        )}
-      </Animated.View>
+          )}
 
-      {/* About Section */}
-      <Animated.View entering={FadeInDown.duration(400).delay(400)}>
-        <SectionHeader title="ABOUT" themeColors={themeColors} />
+          <SettingsRow
+            icon={<Music size={20} color={themeColors.accentPrimary} />}
+            title="Ambient Music"
+            subtitle="Soft background sounds"
+            themeColors={themeColors}
+            right={
+              <Switch
+                value={ambientMusicEnabled}
+                onValueChange={setAmbientMusicEnabled}
+                trackColor={{
+                  false: themeColors.border,
+                  true: themeColors.accentSecondary,
+                }}
+                thumbColor={
+                  ambientMusicEnabled
+                    ? themeColors.accentPrimary
+                    : themeColors.surface
+                }
+              />
+            }
+          />
 
-        <SettingsRow
-          icon="💝"
-          title="Made with love"
-          subtitle="A personal gift, just for you"
-          themeColors={themeColors}
-        />
+          {ambientMusicEnabled && (
+            <View
+              style={[
+                styles.subCard,
+                {
+                  backgroundColor: themeColors.surface,
+                  borderColor: themeColors.border,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  typography.ui.small,
+                  {
+                    color: themeColors.textSecondary,
+                    marginBottom: spacing.sm,
+                  },
+                ]}
+              >
+                Volume: {Math.round(ambientVolume * 100)}%
+              </Text>
+              <View style={styles.volumeRow}>
+                <VolumeX size={16} color={themeColors.textSecondary} />
+                <View
+                  style={[
+                    styles.volumeTrack,
+                    { backgroundColor: themeColors.border },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.volumeFill,
+                      {
+                        backgroundColor: themeColors.accentPrimary,
+                        width: `${ambientVolume * 100}%`,
+                      },
+                    ]}
+                  />
+                </View>
+                <Volume2 size={16} color={themeColors.textSecondary} />
+              </View>
+              <View style={styles.volumeButtons}>
+                {[0.25, 0.5, 0.75, 1.0].map(vol => (
+                  <TouchableOpacity
+                    key={vol}
+                    onPress={() => setAmbientVolume(vol)}
+                    style={[
+                      styles.volumeButton,
+                      {
+                        backgroundColor:
+                          ambientVolume === vol
+                            ? themeColors.accentSecondary
+                            : 'transparent',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        typography.ui.small,
+                        {
+                          color:
+                            ambientVolume === vol
+                              ? themeColors.textPrimary
+                              : themeColors.textSecondary,
+                        },
+                      ]}
+                    >
+                      {Math.round(vol * 100)}%
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+        </Animated.View>
 
-        <SettingsRow
-          icon="✨"
-          title="Reverie"
-          subtitle="Version 1.0.0"
-          themeColors={themeColors}
-        />
-      </Animated.View>
+        {/* About Section */}
+        <Animated.View entering={FadeInDown.duration(400).delay(400)}>
+          <SectionHeader title="ABOUT" themeColors={themeColors} />
 
-      {/* Easter Egg Footer */}
-      <Animated.View
-        entering={FadeInDown.duration(400).delay(500)}
-        style={styles.footer}
-      >
-        <Text
-          style={[
-            typography.reading.quote,
-            {
-              color: themeColors.textSecondary,
-              textAlign: 'center',
-              fontSize: 14,
-            },
-          ]}
+          <SettingsRow
+            icon={<Heart size={20} color={themeColors.accentPrimary} />}
+            title="Made with love"
+            subtitle="A personal gift, just for you"
+            themeColors={themeColors}
+          />
+
+          <SettingsRow
+            icon={<Sparkles size={20} color={themeColors.accentPrimary} />}
+            title="Reverie"
+            subtitle="Version 1.0.0"
+            themeColors={themeColors}
+          />
+        </Animated.View>
+
+        {/* Easter Egg Footer */}
+        <Animated.View
+          entering={FadeInDown.duration(400).delay(500)}
+          style={styles.footer}
         >
-          "You're in my veins, and I cannot get you out."
-        </Text>
-        <Text
-          style={[
-            typography.ui.caption,
-            {
-              color: themeColors.accentSecondary,
-              textAlign: 'center',
-              marginTop: spacing.xs,
-            },
-          ]}
-        >
-          ♡
-        </Text>
-      </Animated.View>
-    </ScrollView>
+          <Text
+            style={[
+              typography.reading.quote,
+              {
+                color: themeColors.textSecondary,
+                textAlign: 'center',
+                fontSize: 14,
+              },
+            ]}
+          >
+            "You're in my veins, and I cannot get you out."
+          </Text>
+          <Text
+            style={[
+              typography.ui.caption,
+              {
+                color: themeColors.accentSecondary,
+                textAlign: 'center',
+                marginTop: spacing.xs,
+              },
+            ]}
+          >
+            ♡
+          </Text>
+        </Animated.View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -536,7 +564,11 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.xl,
-    marginTop: spacing.md,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   sectionHeader: {
     marginBottom: spacing.md,
@@ -560,9 +592,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.sm,
   },
-  themeIcon: {
-    fontSize: 24,
-  },
   card: {
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
@@ -573,9 +602,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.md,
     gap: spacing.sm,
-  },
-  cardIcon: {
-    fontSize: 20,
   },
   fontSizeContainer: {
     marginTop: spacing.sm,
@@ -602,7 +628,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   rowIcon: {
-    fontSize: 24,
     marginRight: spacing.md,
   },
   rowContent: {

@@ -39,6 +39,11 @@ interface SettingsState extends AppSettings {
   completeOnboarding: () => void;
   incrementEasterEggTap: () => number;
   resetEasterEggTaps: () => void;
+
+  // Book reader customization
+  setBookReaderFontSize: (size: number) => void;
+  setBookReaderFontFamily: (family: 'literata' | 'inter') => void;
+  setBookReaderLineSpacing: (spacing: number) => void;
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -151,5 +156,23 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   resetEasterEggTaps: () => {
     dbSetSetting('easterEggTapCount', 0);
     set({ easterEggTapCount: 0 });
+  },
+
+  // Book reader customization
+  setBookReaderFontSize: bookReaderFontSize => {
+    const clamped = Math.max(0.8, Math.min(1.5, bookReaderFontSize));
+    dbSetSetting('bookReaderFontSize', clamped);
+    set({ bookReaderFontSize: clamped });
+  },
+
+  setBookReaderFontFamily: bookReaderFontFamily => {
+    dbSetSetting('bookReaderFontFamily', bookReaderFontFamily);
+    set({ bookReaderFontFamily });
+  },
+
+  setBookReaderLineSpacing: bookReaderLineSpacing => {
+    const clamped = Math.max(1.2, Math.min(2.0, bookReaderLineSpacing));
+    dbSetSetting('bookReaderLineSpacing', clamped);
+    set({ bookReaderLineSpacing: clamped });
   },
 }));

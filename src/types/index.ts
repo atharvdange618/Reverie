@@ -76,6 +76,11 @@ export interface AppSettings {
   defaultHighlightColor: HighlightColor;
   hasCompletedOnboarding: boolean;
   easterEggTapCount: number; // For tracking hidden icon taps
+
+  // Reading customization settings
+  bookReaderFontSize: number; // 0.8-1.5 multiplier
+  bookReaderFontFamily: 'literata' | 'inter'; // Font family for book reader
+  bookReaderLineSpacing: number; // 1.2-2.0 multiplier
 }
 
 export const defaultSettings: AppSettings = {
@@ -90,6 +95,11 @@ export const defaultSettings: AppSettings = {
   defaultHighlightColor: 'yellow',
   hasCompletedOnboarding: false,
   easterEggTapCount: 0,
+
+  // Reading defaults
+  bookReaderFontSize: 1.0,
+  bookReaderFontFamily: 'literata',
+  bookReaderLineSpacing: 1.6,
 };
 
 // ============ Navigation Types ============
