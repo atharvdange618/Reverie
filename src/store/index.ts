@@ -2,6 +2,7 @@
  * Store Exports
  */
 
-export { useSettingsStore } from './useSettingsStore';
 export { useBookStore } from './useBookStore';
+export { useSettingsStore } from './useSettingsStore';
 export { useAnnotationStore } from './useAnnotationStore';
+export { useMusicStore } from './useMusicStore';

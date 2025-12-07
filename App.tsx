@@ -11,9 +11,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppNavigator } from './src/navigation';
 import { useSettingsStore } from './src/store';
+import { FloatingMusicPlayer } from './src/components/audio';
 
 function AppContent() {
-  const { themeColors, theme } = useSettingsStore();
+  const { themeColors, theme, ambientMusicEnabled } = useSettingsStore();
 
   return (
     <View
@@ -24,6 +25,7 @@ function AppContent() {
         backgroundColor={themeColors.background}
       />
       <AppNavigator />
+      {ambientMusicEnabled && <FloatingMusicPlayer themeColors={themeColors} />}
     </View>
   );
 }

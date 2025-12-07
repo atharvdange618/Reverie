@@ -9,7 +9,7 @@
  * - About section with easter eggs
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -33,7 +33,7 @@ import {
   Type,
 } from 'lucide-react-native';
 
-import { useSettingsStore } from '../store';
+import { useSettingsStore, useMusicStore } from '../store';
 import { typography, spacing, borderRadius, colors } from '../theme';
 import type { ThemeMode } from '../theme/colors';
 
@@ -232,6 +232,35 @@ export const SettingsScreen = () => {
     setAmbientVolume,
   } = useSettingsStore();
 
+  const { initialize, toggleMusic, setVolume, isPlaying } = useMusicStore();
+
+  // Initialize music player on mount
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  // Sync music playback with settings
+  useEffect(() => {
+    if (ambientMusicEnabled && !isPlaying) {
+      toggleMusic();
+    } else if (!ambientMusicEnabled && isPlaying) {
+      toggleMusic();
+    }
+  }, [ambientMusicEnabled, isPlaying, toggleMusic]);
+
+  // Sync volume with settings
+  useEffect(() => {
+    setVolume(ambientVolume);
+  }, [ambientVolume, setVolume]);
+
+  const handleMusicToggle = async (enabled: boolean) => {
+    setAmbientMusicEnabled(enabled);
+  };
+
+  const handleVolumeChange = async (volume: number) => {
+    setAmbientVolume(volume);
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
@@ -410,7 +439,7 @@ export const SettingsScreen = () => {
             right={
               <Switch
                 value={ambientMusicEnabled}
-                onValueChange={setAmbientMusicEnabled}
+                onValueChange={handleMusicToggle}
                 trackColor={{
                   false: themeColors.border,
                   true: themeColors.accentSecondary,
@@ -469,7 +498,7 @@ export const SettingsScreen = () => {
                 {[0.25, 0.5, 0.75, 1.0].map(vol => (
                   <TouchableOpacity
                     key={vol}
-                    onPress={() => setAmbientVolume(vol)}
+                    onPress={() => handleVolumeChange(vol)}
                     style={[
                       styles.volumeButton,
                       {

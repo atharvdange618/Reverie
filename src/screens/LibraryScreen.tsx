@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: spacing.lg,
-    bottom: spacing.xl,
+    bottom: spacing['5xl'],
     width: 56,
     height: 56,
     borderRadius: 28,
