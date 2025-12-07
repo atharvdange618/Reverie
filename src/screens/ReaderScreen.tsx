@@ -9,7 +9,13 @@
  * - Page navigation
  */
 
-import React, { useState, useCallback, useEffect, ReactNode } from 'react';
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  ReactNode,
+  useMemo,
+} from 'react';
 import {
   View,
   Text,
@@ -35,9 +41,10 @@ import {
 } from 'lucide-react-native';
 import { useSettingsStore, useBookStore, useAnnotationStore } from '../store';
 import { typography, spacing, borderRadius, shadows } from '../theme';
-import { PdfViewer } from '../components/pdf';
-import { BookReader } from '../components/reader';
+import { PdfViewerWithAnnotations } from '../components/pdf';
+import { BookReaderWithAnnotations } from '../components/reader';
 import type { RootStackParamList } from '../navigation/types';
+import type { HighlightColor } from '../types';
 import {
   getReadingProgress,
   saveReadingProgress,
@@ -83,8 +90,17 @@ export const ReaderScreen = () => {
   const { themeColors, readingMode, theme } = useSettingsStore();
   const { loadBook, currentBook, updateProgress, updateTotalPages } =
     useBookStore();
-  const { loadAnnotations, toggleBookmark, isBookmarked } =
-    useAnnotationStore();
+  const {
+    loadAnnotations,
+    toggleBookmark,
+    isBookmarked,
+    addHighlight,
+    deleteHighlight,
+    highlights,
+    addEmojiReaction,
+    deleteEmojiReaction,
+    emojiReactions,
+  } = useAnnotationStore();
 
   const { bookId } = route.params;
 
@@ -92,6 +108,11 @@ export const ReaderScreen = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [activeTool, setActiveTool] = useState<AnnotationTool>('none');
+  const [highlightColor, setHighlightColor] =
+    useState<HighlightColor>('yellow');
+  const [highlightSize, setHighlightSize] = useState<
+    'small' | 'medium' | 'large'
+  >('medium');
   const [isLoading, setIsLoading] = useState(true);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
@@ -173,9 +194,58 @@ export const ReaderScreen = () => {
     setControlsVisible(prev => !prev);
   }, []);
 
+  // Annotation handlers
+  const handleAddHighlight = useCallback(
+    (
+      page: number,
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      _color: HighlightColor,
+    ) => {
+      addHighlight(page, x, y, width, height, highlightColor);
+    },
+    [addHighlight, highlightColor],
+  );
+
+  const handleDeleteHighlight = useCallback(
+    (id: string) => {
+      console.log('ReaderScreen: Deleting highlight with ID:', id);
+      deleteHighlight(id);
+      console.log('ReaderScreen: Highlight deleted');
+    },
+    [deleteHighlight],
+  );
+
+  const handleAddEmoji = useCallback(
+    (page: number, x: number, y: number, emoji: string) => {
+      addEmojiReaction(page, x, y, emoji);
+    },
+    [addEmojiReaction],
+  );
+
+  const handleDeleteEmoji = useCallback(
+    (id: string) => {
+      deleteEmojiReaction(id);
+    },
+    [deleteEmojiReaction],
+  );
+
   // Calculate progress
   const progress =
     totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0;
+
+  // Get annotations for current page
+  const pageHighlights = useMemo(
+    () => highlights.filter(h => h.page === currentPage),
+    [highlights, currentPage],
+  );
+
+  const pageEmojis = useMemo(
+    () => emojiReactions.filter(e => e.page === currentPage),
+    [emojiReactions, currentPage],
+  );
 
   if (isLoading) {
     return (
@@ -252,37 +322,40 @@ export const ReaderScreen = () => {
             },
           ]}
         >
-        <TouchableOpacity onPress={handleBack} style={styles.topBarButton}>
-          <ArrowLeft size={24} color={themeColors.textPrimary} />
-        </TouchableOpacity>
+          <TouchableOpacity onPress={handleBack} style={styles.topBarButton}>
+            <ArrowLeft size={24} color={themeColors.textPrimary} />
+          </TouchableOpacity>
 
-        <View style={styles.topBarCenter}>
-          <Text
-            style={[
-              typography.ui.bodyMedium,
-              { color: themeColors.textPrimary },
-            ]}
-            numberOfLines={1}
-          >
-            {currentBook.title}
-          </Text>
-          <Text
-            style={[
-              typography.ui.caption,
-              { color: themeColors.textSecondary },
-            ]}
-          >
-            Page {currentPage} of {totalPages}
-          </Text>
-        </View>
+          <View style={styles.topBarCenter}>
+            <Text
+              style={[
+                typography.ui.bodyMedium,
+                { color: themeColors.textPrimary },
+              ]}
+              numberOfLines={1}
+            >
+              {currentBook.title}
+            </Text>
+            <Text
+              style={[
+                typography.ui.caption,
+                { color: themeColors.textSecondary },
+              ]}
+            >
+              Page {currentPage} of {totalPages}
+            </Text>
+          </View>
 
-        <TouchableOpacity onPress={handleBookmark} style={styles.topBarButton}>
-          {isBookmarked(currentPage) ? (
-            <BookmarkCheck size={24} color={themeColors.accentPrimary} />
-          ) : (
-            <Bookmark size={24} color={themeColors.textSecondary} />
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleBookmark}
+            style={styles.topBarButton}
+          >
+            {isBookmarked(currentPage) ? (
+              <BookmarkCheck size={24} color={themeColors.accentPrimary} />
+            ) : (
+              <Bookmark size={24} color={themeColors.textSecondary} />
+            )}
+          </TouchableOpacity>
         </Animated.View>
       )}
 
@@ -315,21 +388,27 @@ export const ReaderScreen = () => {
             </Text>
           </View>
         ) : theme === 'dark' ? (
-          <BookReader
+          <BookReaderWithAnnotations
             filePath={currentBook.filePath}
-            bookId={
-              typeof currentBook.id === 'string'
-                ? parseInt(currentBook.id, 10)
-                : currentBook.id
-            }
+            bookId={bookId}
             currentPage={currentPage}
             onPageChanged={handlePageChange}
             onLoadComplete={handleLoadComplete}
             enableDarkMode={true}
             onToggleControls={handleToggleControls}
+            activeTool={activeTool}
+            themeColors={themeColors}
+            highlightColor={highlightColor}
+            highlightSize={highlightSize}
+            onAddHighlight={handleAddHighlight}
+            onDeleteHighlight={handleDeleteHighlight}
+            onAddEmoji={handleAddEmoji}
+            onDeleteEmoji={handleDeleteEmoji}
+            pageHighlights={pageHighlights}
+            pageEmojis={pageEmojis}
           />
         ) : (
-          <PdfViewer
+          <PdfViewerWithAnnotations
             source={currentBook.filePath}
             page={currentPage}
             onPageChange={handlePageChange}
@@ -337,6 +416,17 @@ export const ReaderScreen = () => {
             onError={handlePdfError}
             readingMode={readingMode}
             backgroundColor={themeColors.background}
+            activeTool={activeTool}
+            bookId={bookId}
+            themeColors={themeColors}
+            highlightColor={highlightColor}
+            highlightSize={highlightSize}
+            onAddHighlight={handleAddHighlight}
+            onDeleteHighlight={handleDeleteHighlight}
+            onAddEmoji={handleAddEmoji}
+            onDeleteEmoji={handleDeleteEmoji}
+            pageHighlights={pageHighlights}
+            pageEmojis={pageEmojis}
           />
         )}
       </View>
@@ -354,85 +444,90 @@ export const ReaderScreen = () => {
             },
           ]}
         >
-        {/* Progress indicator */}
-        <View style={styles.progressContainer}>
-          <View
-            style={[
-              styles.progressBar,
-              { backgroundColor: themeColors.divider },
-            ]}
-          >
+          {/* Progress indicator */}
+          <View style={styles.progressContainer}>
             <View
               style={[
-                styles.progressFill,
-                {
-                  backgroundColor: themeColors.accentPrimary,
-                  width: `${progress}%`,
-                },
+                styles.progressBar,
+                { backgroundColor: themeColors.divider },
               ]}
+            >
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    backgroundColor: themeColors.accentPrimary,
+                    width: `${progress}%`,
+                  },
+                ]}
+              />
+            </View>
+            <Text
+              style={[
+                typography.ui.small,
+                { color: themeColors.textSecondary },
+              ]}
+            >
+              {progress}%
+            </Text>
+          </View>
+
+          {/* Annotation Tools */}
+          <View style={styles.toolsRow}>
+            <ToolButton
+              icon={
+                <Highlighter
+                  size={22}
+                  color={
+                    activeTool === 'highlight'
+                      ? '#FFFFFF'
+                      : themeColors.textSecondary
+                  }
+                />
+              }
+              isActive={activeTool === 'highlight'}
+              onPress={() => handleToolSelect('highlight')}
+              themeColors={themeColors}
+            />
+            <ToolButton
+              icon={
+                <Pencil
+                  size={22}
+                  color={
+                    activeTool === 'freehand'
+                      ? '#FFFFFF'
+                      : themeColors.textSecondary
+                  }
+                />
+              }
+              isActive={activeTool === 'freehand'}
+              onPress={() => handleToolSelect('freehand')}
+              themeColors={themeColors}
+            />
+            <ToolButton
+              icon={
+                <Smile
+                  size={22}
+                  color={
+                    activeTool === 'emoji'
+                      ? '#FFFFFF'
+                      : themeColors.textSecondary
+                  }
+                />
+              }
+              isActive={activeTool === 'emoji'}
+              onPress={() => handleToolSelect('emoji')}
+              themeColors={themeColors}
+            />
+            <ToolButton
+              icon={<Volume2 size={22} color={themeColors.textSecondary} />}
+              isActive={false}
+              onPress={() => {
+                // TODO: TTS toggle
+              }}
+              themeColors={themeColors}
             />
           </View>
-          <Text
-            style={[typography.ui.small, { color: themeColors.textSecondary }]}
-          >
-            {progress}%
-          </Text>
-        </View>
-
-        {/* Annotation Tools */}
-        <View style={styles.toolsRow}>
-          <ToolButton
-            icon={
-              <Highlighter
-                size={22}
-                color={
-                  activeTool === 'highlight'
-                    ? '#FFFFFF'
-                    : themeColors.textSecondary
-                }
-              />
-            }
-            isActive={activeTool === 'highlight'}
-            onPress={() => handleToolSelect('highlight')}
-            themeColors={themeColors}
-          />
-          <ToolButton
-            icon={
-              <Pencil
-                size={22}
-                color={
-                  activeTool === 'freehand'
-                    ? '#FFFFFF'
-                    : themeColors.textSecondary
-                }
-              />
-            }
-            isActive={activeTool === 'freehand'}
-            onPress={() => handleToolSelect('freehand')}
-            themeColors={themeColors}
-          />
-          <ToolButton
-            icon={
-              <Smile
-                size={22}
-                color={
-                  activeTool === 'emoji' ? '#FFFFFF' : themeColors.textSecondary
-                }
-              />
-            }
-            isActive={activeTool === 'emoji'}
-            onPress={() => handleToolSelect('emoji')}
-            themeColors={themeColors}
-          />
-          <ToolButton
-            icon={<Volume2 size={22} color={themeColors.textSecondary} />}
-            isActive={false}
-            onPress={() => {
-              // TODO: TTS toggle
-            }}
-            themeColors={themeColors}
-          />
-        </View>
         </Animated.View>
       )}
 
@@ -466,6 +561,97 @@ export const ReaderScreen = () => {
                 <Text style={styles.toolIndicatorText}>Emoji Mode</Text>
               </>
             )}
+          </View>
+        </Animated.View>
+      )}
+
+      {/* Highlight Options - Color & Size Picker */}
+      {activeTool === 'highlight' && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={[
+            styles.highlightOptions,
+            {
+              backgroundColor: themeColors.surface,
+              borderColor: themeColors.border,
+            },
+            shadows.md,
+          ]}
+        >
+          {/* Color Picker */}
+          <View style={styles.optionsSection}>
+            <Text
+              style={[
+                typography.ui.small,
+                { color: themeColors.textSecondary, marginBottom: spacing.xs },
+              ]}
+            >
+              Color
+            </Text>
+            <View style={styles.colorOptions}>
+              {[
+                { color: 'yellow' as const, hex: '#FFEB3B' },
+                { color: 'green' as const, hex: '#4CAF50' },
+                { color: 'blue' as const, hex: '#2196F3' },
+                { color: 'pink' as const, hex: '#E91E63' },
+                { color: 'purple' as const, hex: '#9C27B0' },
+                { color: 'orange' as const, hex: '#FF9800' },
+              ].map(({ color, hex }) => (
+                <TouchableOpacity
+                  key={color}
+                  onPress={() => setHighlightColor(color)}
+                  style={[
+                    styles.colorButton,
+                    { backgroundColor: hex },
+                    highlightColor === color && [
+                      styles.selectedColorButton,
+                      { borderColor: themeColors.accentPrimary },
+                    ],
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* Size Picker */}
+          <View style={styles.optionsSection}>
+            <Text
+              style={[
+                typography.ui.small,
+                { color: themeColors.textSecondary, marginBottom: spacing.xs },
+              ]}
+            >
+              Size
+            </Text>
+            <View style={styles.sizeOptions}>
+              {(['small', 'medium', 'large'] as const).map(size => {
+                const isSelected = highlightSize === size;
+                const textColor = isSelected
+                  ? '#FFFFFF'
+                  : themeColors.textSecondary;
+                const bgColor = isSelected
+                  ? themeColors.accentPrimary
+                  : themeColors.background;
+                return (
+                  <TouchableOpacity
+                    key={size}
+                    onPress={() => setHighlightSize(size)}
+                    style={[
+                      styles.sizeButton,
+                      {
+                        backgroundColor: bgColor,
+                        borderColor: themeColors.border,
+                      },
+                    ]}
+                  >
+                    <Text style={[typography.ui.small, { color: textColor }]}>
+                      {size.charAt(0).toUpperCase() + size.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
         </Animated.View>
       )}
@@ -584,6 +770,45 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 14,
+  },
+  highlightOptions: {
+    position: 'absolute',
+    top: 130,
+    alignSelf: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    minWidth: 280,
+  },
+  optionsSection: {
+    marginBottom: spacing.sm,
+  },
+  colorOptions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  colorButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  selectedColorButton: {
+    borderWidth: 3,
+  },
+  sizeOptions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  sizeButton: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1.5,
+    alignItems: 'center',
   },
 });
 

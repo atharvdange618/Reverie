@@ -1,0 +1,268 @@
+/**
+ * Highlight Overlay
+ *
+ * Renders rectangle highlights over PDF and handles drawing new highlights
+ */
+
+import React, { useState, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  runOnJS,
+} from 'react-native-reanimated';
+import { Trash2 } from 'lucide-react-native';
+import { Highlight, HighlightColor } from '../../types';
+import { borderRadius } from '../../theme';
+
+interface HighlightOverlayProps {
+  highlights: Highlight[];
+  isDrawingMode: boolean;
+  selectedColor: HighlightColor;
+  highlightSize: 'small' | 'medium' | 'large';
+  pageWidth: number;
+  pageHeight: number;
+  onAddHighlight: (x: number, y: number, width: number, height: number) => void;
+  onDeleteHighlight: (id: string) => void;
+  themeColors: any;
+}
+
+const HIGHLIGHT_OPACITY = 0.55;
+
+const COLOR_MAP: Record<HighlightColor, string> = {
+  yellow: '#FFF3B0',
+  green: '#D4EDDA',
+  blue: '#C5E0F7',
+  pink: '#FFD6E0',
+  purple: '#E8D5F2',
+  orange: '#FFE0CC',
+};
+
+const MIN_SIZE_MAP = {
+  small: 15,
+  medium: 20,
+  large: 25,
+};
+
+export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
+  highlights,
+  isDrawingMode,
+  selectedColor,
+  highlightSize,
+  pageWidth,
+  pageHeight,
+  onAddHighlight,
+  onDeleteHighlight,
+  themeColors,
+}) => {
+  const [selectedHighlight, setSelectedHighlight] = useState<string | null>(
+    null,
+  );
+
+  // Shared values for drawing
+  const startX = useSharedValue(0);
+  const startY = useSharedValue(0);
+  const currentX = useSharedValue(0);
+  const currentY = useSharedValue(0);
+  const isDrawing = useSharedValue(false);
+
+  // Convert percentage to pixels
+  const toPixels = useCallback(
+    (percent: number, dimension: 'width' | 'height') => {
+      return (percent / 100) * (dimension === 'width' ? pageWidth : pageHeight);
+    },
+    [pageWidth, pageHeight],
+  );
+
+  // Convert pixels to percentage
+  const toPercent = useCallback(
+    (pixels: number, dimension: 'width' | 'height') => {
+      return (pixels / (dimension === 'width' ? pageWidth : pageHeight)) * 100;
+    },
+    [pageWidth, pageHeight],
+  );
+
+  // Handler to add highlight (runs on JS thread)
+  const handleAddHighlightJS = useCallback(
+    (sX: number, sY: number, cX: number, cY: number) => {
+      const minX = Math.min(sX, cX);
+      const minY = Math.min(sY, cY);
+      const maxX = Math.max(sX, cX);
+      const maxY = Math.max(sY, cY);
+
+      const width = maxX - minX;
+      const height = maxY - minY;
+
+      // Only create highlight if both dimensions are big enough
+      const minSize = MIN_SIZE_MAP[highlightSize];
+      if (width >= minSize || height >= minSize) {
+        onAddHighlight(
+          toPercent(minX, 'width'),
+          toPercent(minY, 'height'),
+          toPercent(width, 'width'),
+          toPercent(height, 'height'),
+        );
+      }
+    },
+    [onAddHighlight, toPercent, highlightSize],
+  );
+
+  // Create pan gesture for drawing highlights
+  const panGesture = Gesture.Pan()
+    .enabled(isDrawingMode)
+    .onStart(event => {
+      'worklet';
+      startX.value = event.x;
+      startY.value = event.y;
+      currentX.value = event.x;
+      currentY.value = event.y;
+      isDrawing.value = true;
+    })
+    .onUpdate(event => {
+      'worklet';
+      currentX.value = event.x;
+      currentY.value = event.y;
+    })
+    .onEnd(() => {
+      'worklet';
+      const sX = startX.value;
+      const sY = startY.value;
+      const cX = currentX.value;
+      const cY = currentY.value;
+
+      isDrawing.value = false;
+
+      // Call JS function to add highlight
+      runOnJS(handleAddHighlightJS)(sX, sY, cX, cY);
+    });
+
+  // Animated style for drawing rectangle preview
+  const animatedDrawingStyle = useAnimatedStyle(() => {
+    const minX = Math.min(startX.value, currentX.value);
+    const minY = Math.min(startY.value, currentY.value);
+    const width = Math.abs(currentX.value - startX.value);
+    const height = Math.abs(currentY.value - startY.value);
+
+    return {
+      position: 'absolute' as const,
+      left: minX,
+      top: minY,
+      width,
+      height,
+      backgroundColor: COLOR_MAP[selectedColor],
+      opacity: isDrawing.value ? HIGHLIGHT_OPACITY + 0.15 : 0,
+      borderWidth: 2,
+      borderColor: COLOR_MAP[selectedColor],
+      borderStyle: 'dashed' as const,
+    };
+  });
+
+  const handleHighlightPress = useCallback(
+    (id: string) => {
+      if (!isDrawingMode) {
+        setSelectedHighlight(prev => (prev === id ? null : id));
+      }
+    },
+    [isDrawingMode],
+  );
+
+  const handleDeleteHighlight = useCallback(
+    (id: string) => {
+      console.log('Deleting highlight:', id);
+      onDeleteHighlight(id);
+      setSelectedHighlight(null);
+    },
+    [onDeleteHighlight],
+  );
+
+  return (
+    <GestureDetector gesture={panGesture}>
+      <View
+        style={StyleSheet.absoluteFill}
+        pointerEvents={isDrawingMode ? 'auto' : 'box-none'}
+      >
+        {/* Render existing highlights */}
+        {highlights.map(highlight => {
+          const isSelected = selectedHighlight === highlight.id;
+          return (
+            <View
+              key={highlight.id}
+              style={[
+                styles.highlightContainer,
+                {
+                  left: toPixels(highlight.x, 'width'),
+                  top: toPixels(highlight.y, 'height'),
+                  width: toPixels(highlight.width, 'width'),
+                  height: toPixels(highlight.height, 'height'),
+                },
+              ]}
+              pointerEvents={isDrawingMode ? 'none' : 'auto'}
+            >
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => handleHighlightPress(highlight.id)}
+                style={[
+                  styles.highlight,
+                  {
+                    backgroundColor: COLOR_MAP[highlight.color],
+                    opacity: HIGHLIGHT_OPACITY,
+                  },
+                  isSelected && [
+                    styles.selectedBorder,
+                    {
+                      borderColor: themeColors.accentPrimary,
+                      opacity: HIGHLIGHT_OPACITY + 0.1,
+                    },
+                  ],
+                ]}
+              />
+              {isSelected && (
+                <TouchableOpacity
+                  style={[
+                    styles.deleteButton,
+                    { backgroundColor: themeColors.error || '#EF4444' },
+                  ]}
+                  onPress={() => handleDeleteHighlight(highlight.id)}
+                >
+                  <Trash2 size={16} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
+            </View>
+          );
+        })}
+
+        {/* Render current drawing rectangle */}
+        <Animated.View style={animatedDrawingStyle} />
+      </View>
+    </GestureDetector>
+  );
+};
+
+const styles = StyleSheet.create({
+  highlight: {
+    flex: 1,
+    borderRadius: borderRadius.sm,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: -12,
+    right: -12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  highlightContainer: {
+    position: 'absolute',
+  },
+  selectedBorder: {
+    borderWidth: 2,
+  },
+});

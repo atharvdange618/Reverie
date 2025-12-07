@@ -215,10 +215,13 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
   deleteHighlight: id => {
     dbDeleteHighlight(id);
 
-    set(state => ({
-      highlights: state.highlights.filter(h => h.id !== id),
-      counts: { ...state.counts, highlights: state.counts.highlights - 1 },
-    }));
+    set(state => {
+      const newHighlights = state.highlights.filter(h => h.id !== id);
+      return {
+        highlights: newHighlights,
+        counts: { ...state.counts, highlights: state.counts.highlights - 1 },
+      };
+    });
   },
 
   getPageHighlights: page => {
