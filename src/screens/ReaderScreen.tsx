@@ -95,9 +95,11 @@ export const ReaderScreen = () => {
     toggleBookmark,
     isBookmarked,
     addHighlight,
+    updateHighlight,
     deleteHighlight,
     highlights,
     addEmojiReaction,
+    updateEmojiReaction,
     deleteEmojiReaction,
     emojiReactions,
   } = useAnnotationStore();
@@ -223,6 +225,20 @@ export const ReaderScreen = () => {
       addEmojiReaction(page, x, y, emoji);
     },
     [addEmojiReaction],
+  );
+
+  const handleUpdateEmoji = useCallback(
+    (id: string, x: number, y: number) => {
+      updateEmojiReaction(id, x, y);
+    },
+    [updateEmojiReaction],
+  );
+
+  const handleUpdateHighlight = useCallback(
+    (id: string, x: number, y: number, width: number, height: number) => {
+      updateHighlight(id, x, y, width, height);
+    },
+    [updateHighlight],
   );
 
   const handleDeleteEmoji = useCallback(
@@ -401,8 +417,10 @@ export const ReaderScreen = () => {
             highlightColor={highlightColor}
             highlightSize={highlightSize}
             onAddHighlight={handleAddHighlight}
+            onUpdateHighlight={handleUpdateHighlight}
             onDeleteHighlight={handleDeleteHighlight}
             onAddEmoji={handleAddEmoji}
+            onUpdateEmoji={handleUpdateEmoji}
             onDeleteEmoji={handleDeleteEmoji}
             pageHighlights={pageHighlights}
             pageEmojis={pageEmojis}
@@ -422,8 +440,10 @@ export const ReaderScreen = () => {
             highlightColor={highlightColor}
             highlightSize={highlightSize}
             onAddHighlight={handleAddHighlight}
+            onUpdateHighlight={handleUpdateHighlight}
             onDeleteHighlight={handleDeleteHighlight}
             onAddEmoji={handleAddEmoji}
+            onUpdateEmoji={handleUpdateEmoji}
             onDeleteEmoji={handleDeleteEmoji}
             pageHighlights={pageHighlights}
             pageEmojis={pageEmojis}

@@ -19,12 +19,14 @@ import {
   getHighlights,
   addHighlight as dbAddHighlight,
   updateHighlightColor as dbUpdateHighlightColor,
+  updateHighlight as dbUpdateHighlight,
   deleteHighlight as dbDeleteHighlight,
   getFreehandHighlights,
   addFreehandHighlight as dbAddFreehandHighlight,
   deleteFreehandHighlight as dbDeleteFreehandHighlight,
   getEmojiReactions,
   addEmojiReaction as dbAddEmojiReaction,
+  updateEmojiReaction as dbUpdateEmojiReaction,
   deleteEmojiReaction as dbDeleteEmojiReaction,
   getAnnotationCounts,
 } from '../db';
@@ -66,6 +68,13 @@ interface AnnotationState {
     color: HighlightColor,
   ) => Highlight;
   updateHighlightColor: (id: string, color: HighlightColor) => void;
+  updateHighlight: (
+    id: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ) => void;
   deleteHighlight: (id: string) => void;
   getPageHighlights: (page: number) => Highlight[];
 
@@ -86,6 +95,7 @@ interface AnnotationState {
     y: number,
     emoji: string,
   ) => EmojiReaction;
+  updateEmojiReaction: (id: string, x: number, y: number) => void;
   deleteEmojiReaction: (id: string) => void;
   getPageEmojiReactions: (page: number) => EmojiReaction[];
 
@@ -212,6 +222,16 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     }));
   },
 
+  updateHighlight: (id, x, y, width, height) => {
+    dbUpdateHighlight(id, x, y, width, height);
+
+    set(state => ({
+      highlights: state.highlights.map(h =>
+        h.id === id ? { ...h, x, y, width, height } : h,
+      ),
+    }));
+  },
+
   deleteHighlight: id => {
     dbDeleteHighlight(id);
 
@@ -284,6 +304,16 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     }));
 
     return reaction;
+  },
+
+  updateEmojiReaction: (id, x, y) => {
+    dbUpdateEmojiReaction(id, x, y);
+
+    set(state => ({
+      emojiReactions: state.emojiReactions.map(r =>
+        r.id === id ? { ...r, x, y } : r
+      ),
+    }));
   },
 
   deleteEmojiReaction: id => {

@@ -43,8 +43,16 @@ interface BookReaderWithAnnotationsProps {
     height: number,
     color: HighlightColor,
   ) => void;
+  onUpdateHighlight: (
+    id: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ) => void;
   onDeleteHighlight: (id: string) => void;
   onAddEmoji: (page: number, x: number, y: number, emoji: string) => void;
+  onUpdateEmoji: (id: string, x: number, y: number) => void;
   onDeleteEmoji: (id: string) => void;
 
   // Current page annotations
@@ -69,8 +77,10 @@ export const BookReaderWithAnnotations: React.FC<
   highlightColor,
   highlightSize,
   onAddHighlight,
+  onUpdateHighlight,
   onDeleteHighlight,
   onAddEmoji,
+  onUpdateEmoji,
   onDeleteEmoji,
   pageHighlights,
   pageEmojis,
@@ -90,7 +100,8 @@ export const BookReaderWithAnnotations: React.FC<
   );
 
   // Handle opening emoji picker
-  const handleOpenEmojiPicker = useCallback(() => {
+  const handleOpenEmojiPicker = useCallback((x: number, y: number) => {
+    setPendingEmojiPosition({ x, y });
     setShowEmojiPicker(true);
   }, []);
 
@@ -141,6 +152,7 @@ export const BookReaderWithAnnotations: React.FC<
             pageWidth={SCREEN_WIDTH}
             pageHeight={SCREEN_HEIGHT}
             onAddHighlight={handleAddHighlight}
+            onUpdateHighlight={onUpdateHighlight}
             onDeleteHighlight={onDeleteHighlight}
             themeColors={themeColors}
           />
@@ -156,6 +168,7 @@ export const BookReaderWithAnnotations: React.FC<
             onAddReaction={(x, y, emoji) =>
               onAddEmoji(currentPage, x, y, emoji)
             }
+            onUpdateReaction={onUpdateEmoji}
             onDeleteReaction={onDeleteEmoji}
             onOpenEmojiPicker={handleOpenEmojiPicker}
             themeColors={themeColors}

@@ -14,7 +14,9 @@ import {
 } from '../annotations';
 import { HighlightColor, Highlight, EmojiReaction } from '../../types';
 
-const { width, height } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+type AnnotationTool = 'none' | 'highlight' | 'freehand' | 'emoji';
 
 interface PdfViewerWithAnnotationsProps {
   source: string;
@@ -26,7 +28,7 @@ interface PdfViewerWithAnnotationsProps {
   backgroundColor?: string;
 
   // Annotation props
-  activeTool: 'none' | 'highlight' | 'freehand' | 'emoji';
+  activeTool: AnnotationTool;
   bookId: string;
   themeColors: any;
   highlightColor: HighlightColor;
@@ -41,8 +43,16 @@ interface PdfViewerWithAnnotationsProps {
     height: number,
     color: HighlightColor,
   ) => void;
+  onUpdateHighlight: (
+    id: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ) => void;
   onDeleteHighlight: (id: string) => void;
   onAddEmoji: (page: number, x: number, y: number, emoji: string) => void;
+  onUpdateEmoji: (id: string, x: number, y: number) => void;
   onDeleteEmoji: (id: string) => void;
 
   // Current page annotations
@@ -66,8 +76,10 @@ export const PdfViewerWithAnnotations: React.FC<
   highlightColor,
   highlightSize,
   onAddHighlight,
+  onUpdateHighlight,
   onDeleteHighlight,
   onAddEmoji,
+  onUpdateEmoji,
   onDeleteEmoji,
   pageHighlights,
   pageEmojis,
@@ -87,7 +99,8 @@ export const PdfViewerWithAnnotations: React.FC<
   );
 
   // Handle opening emoji picker
-  const handleOpenEmojiPicker = useCallback(() => {
+  const handleOpenEmojiPicker = useCallback((x: number, y: number) => {
+    setPendingEmojiPosition({ x, y });
     setShowEmojiPicker(true);
   }, []);
 
@@ -128,9 +141,10 @@ export const PdfViewerWithAnnotations: React.FC<
             isDrawingMode={activeTool === 'highlight'}
             selectedColor={highlightColor}
             highlightSize={highlightSize}
-            pageWidth={width}
-            pageHeight={height}
+            pageWidth={SCREEN_WIDTH}
+            pageHeight={SCREEN_HEIGHT}
             onAddHighlight={handleAddHighlight}
+            onUpdateHighlight={onUpdateHighlight}
             onDeleteHighlight={onDeleteHighlight}
             themeColors={themeColors}
           />
@@ -141,9 +155,10 @@ export const PdfViewerWithAnnotations: React.FC<
           <EmojiReactionOverlay
             reactions={pageEmojis}
             isPlacementMode={activeTool === 'emoji'}
-            pageWidth={width}
-            pageHeight={height}
+            pageWidth={SCREEN_WIDTH}
+            pageHeight={SCREEN_HEIGHT}
             onAddReaction={(x, y, emoji) => onAddEmoji(page, x, y, emoji)}
+            onUpdateReaction={onUpdateEmoji}
             onDeleteReaction={onDeleteEmoji}
             onOpenEmojiPicker={handleOpenEmojiPicker}
             themeColors={themeColors}

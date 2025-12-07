@@ -11,6 +11,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   runOnJS,
+  withSpring,
 } from 'react-native-reanimated';
 import { Trash2 } from 'lucide-react-native';
 import { Highlight, HighlightColor } from '../../types';
@@ -24,6 +25,13 @@ interface HighlightOverlayProps {
   pageWidth: number;
   pageHeight: number;
   onAddHighlight: (x: number, y: number, width: number, height: number) => void;
+  onUpdateHighlight: (
+    id: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ) => void;
   onDeleteHighlight: (id: string) => void;
   themeColors: any;
 }
@@ -45,6 +53,162 @@ const MIN_SIZE_MAP = {
   large: 25,
 };
 
+interface HighlightBoxProps {
+  highlight: Highlight;
+  isSelected: boolean;
+  pageWidth: number;
+  pageHeight: number;
+  onPress: () => void;
+  onUpdate: (
+    id: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ) => void;
+  onDelete: () => void;
+  themeColors: any;
+}
+
+const HighlightBox: React.FC<HighlightBoxProps> = ({
+  highlight,
+  isSelected,
+  pageWidth,
+  pageHeight,
+  onPress,
+  onUpdate,
+  onDelete,
+  themeColors,
+}) => {
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const isDragging = useSharedValue(false);
+
+  // Convert percentage to pixels
+  const toPixels = useCallback(
+    (percent: number, dimension: 'width' | 'height') => {
+      return (percent / 100) * (dimension === 'width' ? pageWidth : pageHeight);
+    },
+    [pageWidth, pageHeight],
+  );
+
+  // Convert pixels to percentage
+  const toPercent = useCallback(
+    (pixels: number, dimension: 'width' | 'height') => {
+      return (pixels / (dimension === 'width' ? pageWidth : pageHeight)) * 100;
+    },
+    [pageWidth, pageHeight],
+  );
+
+  // Handler to update position (runs on JS thread)
+  const handleUpdatePosition = useCallback(
+    (deltaX: number, deltaY: number) => {
+      const currentX = toPixels(highlight.x, 'width');
+      const currentY = toPixels(highlight.y, 'height');
+
+      const finalX = currentX + deltaX;
+      const finalY = currentY + deltaY;
+
+      onUpdate(
+        highlight.id,
+        toPercent(finalX, 'width'),
+        toPercent(finalY, 'height'),
+        highlight.width,
+        highlight.height,
+      );
+    },
+    [
+      highlight.id,
+      highlight.x,
+      highlight.y,
+      highlight.width,
+      highlight.height,
+      onUpdate,
+      toPixels,
+      toPercent,
+    ],
+  );
+
+  // Pan gesture for dragging
+  const panGesture = Gesture.Pan()
+    .onStart(() => {
+      'worklet';
+      isDragging.value = true;
+    })
+    .onUpdate(event => {
+      'worklet';
+      translateX.value = event.translationX;
+      translateY.value = event.translationY;
+    })
+    .onEnd(() => {
+      'worklet';
+      const finalX = translateX.value;
+      const finalY = translateY.value;
+
+      isDragging.value = false;
+      translateX.value = withSpring(0);
+      translateY.value = withSpring(0);
+
+      // Update position in database
+      runOnJS(handleUpdatePosition)(finalX, finalY);
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+    ],
+    opacity: isDragging.value ? 0.7 : 1,
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        styles.highlightContainer,
+        {
+          left: toPixels(highlight.x, 'width'),
+          top: toPixels(highlight.y, 'height'),
+          width: toPixels(highlight.width, 'width'),
+          height: toPixels(highlight.height, 'height'),
+        },
+        animatedStyle,
+      ]}
+    >
+      <GestureDetector gesture={panGesture}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onPress}
+          style={[
+            styles.highlight,
+            {
+              backgroundColor: COLOR_MAP[highlight.color],
+              opacity: HIGHLIGHT_OPACITY,
+            },
+            isSelected && [
+              styles.selectedBorder,
+              {
+                borderColor: themeColors.accentPrimary,
+                opacity: HIGHLIGHT_OPACITY + 0.1,
+              },
+            ],
+          ]}
+        />
+      </GestureDetector>
+      {isSelected && (
+        <TouchableOpacity
+          style={[
+            styles.deleteButton,
+            { backgroundColor: themeColors.error || '#EF4444' },
+          ]}
+          onPress={onDelete}
+        >
+          <Trash2 size={16} color="#FFFFFF" />
+        </TouchableOpacity>
+      )}
+    </Animated.View>
+  );
+};
+
 export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
   highlights,
   isDrawingMode,
@@ -53,6 +217,7 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
   pageWidth,
   pageHeight,
   onAddHighlight,
+  onUpdateHighlight,
   onDeleteHighlight,
   themeColors,
 }) => {
@@ -67,15 +232,7 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
   const currentY = useSharedValue(0);
   const isDrawing = useSharedValue(false);
 
-  // Convert percentage to pixels
-  const toPixels = useCallback(
-    (percent: number, dimension: 'width' | 'height') => {
-      return (percent / 100) * (dimension === 'width' ? pageWidth : pageHeight);
-    },
-    [pageWidth, pageHeight],
-  );
-
-  // Convert pixels to percentage
+  // Convert pixels to percentage (for drawing new highlights)
   const toPercent = useCallback(
     (pixels: number, dimension: 'width' | 'height') => {
       return (pixels / (dimension === 'width' ? pageWidth : pageHeight)) * 100;
@@ -188,46 +345,18 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
           return (
             <View
               key={highlight.id}
-              style={[
-                styles.highlightContainer,
-                {
-                  left: toPixels(highlight.x, 'width'),
-                  top: toPixels(highlight.y, 'height'),
-                  width: toPixels(highlight.width, 'width'),
-                  height: toPixels(highlight.height, 'height'),
-                },
-              ]}
               pointerEvents={isDrawingMode ? 'none' : 'auto'}
             >
-              <TouchableOpacity
-                activeOpacity={0.8}
+              <HighlightBox
+                highlight={highlight}
+                isSelected={isSelected}
+                pageWidth={pageWidth}
+                pageHeight={pageHeight}
                 onPress={() => handleHighlightPress(highlight.id)}
-                style={[
-                  styles.highlight,
-                  {
-                    backgroundColor: COLOR_MAP[highlight.color],
-                    opacity: HIGHLIGHT_OPACITY,
-                  },
-                  isSelected && [
-                    styles.selectedBorder,
-                    {
-                      borderColor: themeColors.accentPrimary,
-                      opacity: HIGHLIGHT_OPACITY + 0.1,
-                    },
-                  ],
-                ]}
+                onUpdate={onUpdateHighlight}
+                onDelete={() => handleDeleteHighlight(highlight.id)}
+                themeColors={themeColors}
               />
-              {isSelected && (
-                <TouchableOpacity
-                  style={[
-                    styles.deleteButton,
-                    { backgroundColor: themeColors.error || '#EF4444' },
-                  ]}
-                  onPress={() => handleDeleteHighlight(highlight.id)}
-                >
-                  <Trash2 size={16} color="#FFFFFF" />
-                </TouchableOpacity>
-              )}
             </View>
           );
         })}

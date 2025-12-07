@@ -4,7 +4,7 @@
  * Renders emoji reactions on the PDF page and handles placement
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,10 +12,12 @@ import {
   TouchableOpacity,
   Pressable,
 } from 'react-native';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  runOnJS,
 } from 'react-native-reanimated';
 import { Trash2 } from 'lucide-react-native';
 import { EmojiReaction } from '../../types';
@@ -26,8 +28,9 @@ interface EmojiReactionOverlayProps {
   pageWidth: number;
   pageHeight: number;
   onAddReaction: (x: number, y: number, emoji: string) => void;
+  onUpdateReaction: (id: string, x: number, y: number) => void;
   onDeleteReaction: (id: string) => void;
-  onOpenEmojiPicker: () => void;
+  onOpenEmojiPicker: (x: number, y: number) => void;
   themeColors: any;
 }
 
@@ -40,6 +43,7 @@ interface ReactionButtonProps {
   pageWidth: number;
   pageHeight: number;
   onPress: (id: string) => void;
+  onUpdate: (id: string, x: number, y: number) => void;
   onDelete: (id: string) => void;
   themeColors: any;
 }
@@ -50,23 +54,91 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({
   pageWidth,
   pageHeight,
   onPress,
+  onUpdate,
   onDelete,
   themeColors,
 }) => {
   const scale = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const isDragging = useSharedValue(false);
+
+  // Convert percentage to pixels
+  const toPixels = useCallback(
+    (percent: number, dimension: 'width' | 'height') => {
+      return (percent / 100) * (dimension === 'width' ? pageWidth : pageHeight);
+    },
+    [pageWidth, pageHeight],
+  );
+
+  // Convert pixels to percentage
+  const toPercent = useCallback(
+    (pixels: number, dimension: 'width' | 'height') => {
+      return (pixels / (dimension === 'width' ? pageWidth : pageHeight)) * 100;
+    },
+    [pageWidth, pageHeight],
+  );
+
+  // Handler to update position (runs on JS thread)
+  const handleUpdatePosition = useCallback(
+    (newX: number, newY: number) => {
+      const currentX = toPixels(reaction.x, 'width');
+      const currentY = toPixels(reaction.y, 'height');
+
+      const finalX = currentX + newX;
+      const finalY = currentY + newY;
+
+      onUpdate(
+        reaction.id,
+        toPercent(finalX, 'width'),
+        toPercent(finalY, 'height'),
+      );
+    },
+    [reaction.id, reaction.x, reaction.y, onUpdate, toPixels, toPercent],
+  );
+
+  // Long press and drag gesture
+  const panGesture = Gesture.Pan()
+    .onStart(() => {
+      'worklet';
+      isDragging.value = true;
+      scale.value = 1.3;
+    })
+    .onUpdate(event => {
+      'worklet';
+      translateX.value = event.translationX;
+      translateY.value = event.translationY;
+    })
+    .onEnd(() => {
+      'worklet';
+      const finalX = translateX.value;
+      const finalY = translateY.value;
+
+      isDragging.value = false;
+      scale.value = isSelected ? 1.2 : 1;
+
+      // Reset translation after updating position
+      translateX.value = 0;
+      translateY.value = 0;
+
+      // Update position on JS thread
+      runOnJS(handleUpdatePosition)(finalX, finalY);
+    });
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withSpring(scale.value) }],
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { scale: withSpring(scale.value) },
+    ],
+    opacity: isDragging.value ? 0.8 : 1,
   }));
 
   useEffect(() => {
-    scale.value = isSelected ? 1.2 : 1;
-  }, [isSelected, scale]);
-
-  // Convert percentage to pixels
-  const toPixels = (percent: number, dimension: 'width' | 'height') => {
-    return (percent / 100) * (dimension === 'width' ? pageWidth : pageHeight);
-  };
+    if (!isDragging.value) {
+      scale.value = isSelected ? 1.2 : 1;
+    }
+  }, [isSelected, scale, isDragging]);
 
   return (
     <View
@@ -78,17 +150,19 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({
         },
       ]}
     >
-      <AnimatedTouchable
-        activeOpacity={0.8}
-        onPress={() => onPress(reaction.id)}
-        style={[
-          styles.reactionButton,
-          animatedStyle,
-          isSelected && styles.reactionButtonSelected,
-        ]}
-      >
-        <Text style={styles.emojiText}>{reaction.emoji}</Text>
-      </AnimatedTouchable>
+      <GestureDetector gesture={panGesture}>
+        <AnimatedTouchable
+          activeOpacity={0.8}
+          onPress={() => onPress(reaction.id)}
+          style={[
+            styles.reactionButton,
+            animatedStyle,
+            isSelected && styles.reactionButtonSelected,
+          ]}
+        >
+          <Text style={styles.emojiText}>{reaction.emoji}</Text>
+        </AnimatedTouchable>
+      </GestureDetector>
 
       {isSelected && (
         <TouchableOpacity
@@ -111,24 +185,27 @@ export const EmojiReactionOverlay: React.FC<EmojiReactionOverlayProps> = ({
   pageWidth,
   pageHeight,
   onAddReaction: _onAddReaction,
+  onUpdateReaction,
   onDeleteReaction,
   onOpenEmojiPicker,
   themeColors,
 }) => {
   const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
 
+  // Convert pixels to percentage
+  const toPercent = (pixels: number, dimension: 'width' | 'height') => {
+    return (pixels / (dimension === 'width' ? pageWidth : pageHeight)) * 100;
+  };
+
   // Handle tap on page to place emoji
-  const handlePagePress = (_event: any) => {
+  const handlePagePress = (event: any) => {
     if (isPlacementMode) {
-      // TODO: Store tap position for emoji placement
-      // const { locationX, locationY } = event.nativeEvent;
-      // const x = toPercent(locationX, 'width');
-      // const y = toPercent(locationY, 'height');
+      const { locationX, locationY } = event.nativeEvent;
+      const x = toPercent(locationX, 'width');
+      const y = toPercent(locationY, 'height');
 
-      // Show emoji picker at this position
-      onOpenEmojiPicker();
-
-      // Position will be handled in parent component for now
+      // Show emoji picker and pass position
+      onOpenEmojiPicker(x, y);
     }
   };
 
@@ -162,6 +239,7 @@ export const EmojiReactionOverlay: React.FC<EmojiReactionOverlayProps> = ({
             pageWidth={pageWidth}
             pageHeight={pageHeight}
             onPress={handleReactionPress}
+            onUpdate={onUpdateReaction}
             onDelete={handleDeleteReaction}
             themeColors={themeColors}
           />

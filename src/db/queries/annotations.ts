@@ -105,6 +105,19 @@ export const updateHighlightColor = (
   executeUpdate('UPDATE highlights SET color = ? WHERE id = ?', [color, id]);
 };
 
+export const updateHighlight = (
+  id: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void => {
+  executeUpdate(
+    'UPDATE highlights SET x = ?, y = ?, width = ?, height = ? WHERE id = ?',
+    [x, y, width, height, id],
+  );
+};
+
 export const deleteHighlight = (id: string): void => {
   executeUpdate('DELETE FROM highlights WHERE id = ?', [id]);
 };
@@ -185,6 +198,17 @@ export const addEmojiReaction = (
   );
 
   return { id, bookId, page, x, y, emoji, createdAt: now };
+};
+
+export const updateEmojiReaction = (
+  id: string,
+  x: number,
+  y: number,
+): void => {
+  executeUpdate(
+    'UPDATE emoji_reactions SET x = ?, y = ? WHERE id = ?',
+    [x, y, id],
+  );
 };
 
 export const deleteEmojiReaction = (id: string): void => {
