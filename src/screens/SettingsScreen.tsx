@@ -19,6 +19,7 @@ import {
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import {
   Settings,
@@ -31,6 +32,8 @@ import {
   Moon,
   Scroll,
   Type,
+  ChevronRight,
+  Mic,
 } from 'lucide-react-native';
 
 import { useSettingsStore, useMusicStore } from '../store';
@@ -218,6 +221,7 @@ const FontSizeSelector = ({ themeColors }: { themeColors: any }) => {
 };
 
 export const SettingsScreen = () => {
+  const navigation = useNavigation();
   const {
     themeColors,
     themeMode,
@@ -428,6 +432,33 @@ export const SettingsScreen = () => {
                   </TouchableOpacity>
                 ))}
               </View>
+
+              {/* Voice Selection Button */}
+              <TouchableOpacity
+                onPress={() => navigation.navigate('VoiceSelection')}
+                style={[
+                  styles.voiceSelectionButton,
+                  {
+                    backgroundColor: themeColors.background,
+                    borderColor: themeColors.border,
+                  },
+                ]}
+              >
+                <Mic size={16} color={themeColors.accentPrimary} />
+                <Text
+                  style={[
+                    typography.ui.body,
+                    {
+                      color: themeColors.textPrimary,
+                      flex: 1,
+                      marginLeft: spacing.sm,
+                    },
+                  ]}
+                >
+                  Select Voice
+                </Text>
+                <ChevronRight size={18} color={themeColors.textSecondary} />
+              </TouchableOpacity>
             </View>
           )}
 
@@ -705,6 +736,15 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.sm,
     alignItems: 'center',
+  },
+  voiceSelectionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    marginTop: spacing.md,
   },
   footer: {
     marginTop: spacing['3xl'],

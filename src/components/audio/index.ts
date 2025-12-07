@@ -6,3 +6,4 @@
 
 export { FloatingMusicPlayer } from './FloatingMusicPlayer';
 export { TtsControls } from './TtsControls';
+export { TtsToolbar } from './TtsToolbar';

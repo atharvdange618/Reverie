@@ -39,10 +39,16 @@ import {
   AlertTriangle,
   BookOpen,
 } from 'lucide-react-native';
-import { useSettingsStore, useBookStore, useAnnotationStore } from '../store';
+import {
+  useSettingsStore,
+  useBookStore,
+  useAnnotationStore,
+  useTtsStore,
+} from '../store';
 import { typography, spacing, borderRadius, shadows } from '../theme';
 import { PdfViewerWithAnnotations } from '../components/pdf';
 import { BookReaderWithAnnotations } from '../components/reader';
+import { TtsToolbar } from '../components/audio';
 import type { RootStackParamList } from '../navigation/types';
 import type { HighlightColor } from '../types';
 import {
@@ -106,6 +112,13 @@ export const ReaderScreen = () => {
 
   const { bookId } = route.params;
 
+  // TTS store
+  const {
+    initialize: initializeTts,
+    speakPage,
+    stop: stopTts,
+  } = useTtsStore();
+
   // State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -118,6 +131,12 @@ export const ReaderScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [isTtsMode, setIsTtsMode] = useState(false);
+
+  // Initialize TTS
+  useEffect(() => {
+    initializeTts();
+  }, [initializeTts]);
 
   // Load book and annotations
   useEffect(() => {
@@ -148,8 +167,25 @@ export const ReaderScreen = () => {
       updateProgress(bookId, page);
 
       saveReadingProgress(bookId, page, 0, updatedTotal, 'pdf');
+
+      // If in TTS mode, stop current speech and start reading new page
+      if (isTtsMode && currentBook?.filePath) {
+        stopTts();
+        // Small delay to ensure stop completes
+        setTimeout(() => {
+          speakPage(currentBook.filePath, page);
+        }, 100);
+      }
     },
-    [bookId, updateProgress, totalPages],
+    [
+      bookId,
+      updateProgress,
+      totalPages,
+      isTtsMode,
+      currentBook,
+      stopTts,
+      speakPage,
+    ],
   );
 
   // Handle bookmark toggle
@@ -195,6 +231,22 @@ export const ReaderScreen = () => {
   const handleToggleControls = useCallback(() => {
     setControlsVisible(prev => !prev);
   }, []);
+
+  // TTS mode handlers
+  const handleActivateTts = useCallback(() => {
+    if (!currentBook?.filePath) return;
+
+    setIsTtsMode(true);
+    setActiveTool('none'); // Deactivate any active annotation tool
+
+    // Start speaking the current page
+    speakPage(currentBook.filePath, currentPage);
+  }, [currentBook, currentPage, speakPage]);
+
+  const handleDeactivateTts = useCallback(() => {
+    setIsTtsMode(false);
+    stopTts();
+  }, [stopTts]);
 
   // Annotation handlers
   const handleAddHighlight = useCallback(
@@ -451,8 +503,8 @@ export const ReaderScreen = () => {
         )}
       </View>
 
-      {/* Bottom Toolbar - Toggleable */}
-      {controlsVisible && (
+      {/* Bottom Toolbar - Toggleable (hidden when TTS mode is active) */}
+      {controlsVisible && !isTtsMode && (
         <Animated.View
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(200)}
@@ -540,15 +592,23 @@ export const ReaderScreen = () => {
               themeColors={themeColors}
             />
             <ToolButton
-              icon={<Volume2 size={22} color={themeColors.textSecondary} />}
-              isActive={false}
-              onPress={() => {
-                // TODO: TTS toggle
-              }}
+              icon={
+                <Volume2
+                  size={22}
+                  color={isTtsMode ? '#FFFFFF' : themeColors.textSecondary}
+                />
+              }
+              isActive={isTtsMode}
+              onPress={handleActivateTts}
               themeColors={themeColors}
             />
           </View>
         </Animated.View>
+      )}
+
+      {/* TTS Toolbar - Replaces bottom toolbar when TTS mode is active */}
+      {controlsVisible && isTtsMode && (
+        <TtsToolbar themeColors={themeColors} onClose={handleDeactivateTts} />
       )}
 
       {/* Active Tool Indicator */}

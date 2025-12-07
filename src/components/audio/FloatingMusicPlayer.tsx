@@ -26,6 +26,7 @@ import {
 } from 'lucide-react-native';
 
 import { useMusicStore, AMBIENT_TRACKS } from '../../store/useMusicStore';
+import { useTtsStore } from '../../store/useTtsStore';
 import { spacing, borderRadius, typography, ThemeColors } from '../../theme';
 
 const COLLAPSED_HEIGHT = 56;
@@ -33,10 +34,12 @@ const EXPANDED_HEIGHT = 220;
 
 interface FloatingMusicPlayerProps {
   themeColors: ThemeColors;
+  isOnReaderScreen?: boolean;
 }
 
 export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
   themeColors,
+  isOnReaderScreen = false,
 }) => {
   const {
     isPlaying,
@@ -49,6 +52,9 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
     playTrack,
     updateProgress,
   } = useMusicStore();
+
+  // Hide music player when TTS is speaking
+  const { isSpeaking: isTtsSpeaking } = useTtsStore();
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -113,6 +119,15 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
     transform: [{ scale: pulseAnim.value }],
   }));
 
+  // Hide when TTS is speaking
+  if (isTtsSpeaking) {
+    return null;
+  }
+
+  // Dynamic bottom position based on current screen
+  // Reader screen has a toolbar, so we need more space
+  const bottomPosition = isOnReaderScreen ? 145 : 85;
+
   return (
     <Animated.View
       style={[
@@ -121,6 +136,7 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
         {
           backgroundColor: themeColors.surface,
           borderColor: themeColors.border,
+          bottom: bottomPosition,
         },
       ]}
     >
@@ -271,7 +287,6 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 85,
     left: spacing.lg,
     right: spacing.lg,
     borderRadius: borderRadius.lg,

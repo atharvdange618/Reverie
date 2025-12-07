@@ -12,7 +12,8 @@ import { RootStackParamList } from './types';
 import { MainTabNavigator } from './MainTabNavigator';
 import { useSettingsStore, useBookStore } from '../store';
 import { getDatabase } from '../db';
-import { OnboardingScreen, ReaderScreen } from '../screens';
+import { OnboardingScreen, ReaderScreen, VoiceSelectionScreen } from '../screens';
+import { FloatingMusicPlayer } from '../components/audio';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -41,10 +42,12 @@ const SplashScreen = () => {
 
 export const AppNavigator = () => {
   const [isReady, setIsReady] = useState(false);
+  const [currentRouteName, setCurrentRouteName] = useState<string | null>(null);
   const {
     initialize: initSettings,
     hasCompletedOnboarding,
     themeColors,
+    ambientMusicEnabled,
   } = useSettingsStore();
   const { initialize: initBooks } = useBookStore();
 
@@ -74,7 +77,14 @@ export const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      onStateChange={state => {
+        if (state) {
+          const currentRoute = state.routes[state.index];
+          setCurrentRouteName(currentRoute?.name || null);
+        }
+      }}
+    >
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
@@ -91,7 +101,20 @@ export const AppNavigator = () => {
           }}
           component={ReaderScreen}
         />
+        <Stack.Screen
+          name="VoiceSelection"
+          options={{
+            animation: 'slide_from_right',
+          }}
+          component={VoiceSelectionScreen}
+        />
       </Stack.Navigator>
+      {ambientMusicEnabled && (
+        <FloatingMusicPlayer
+          themeColors={themeColors}
+          isOnReaderScreen={currentRouteName === 'Reader'}
+        />
+      )}
     </NavigationContainer>
   );
 };
