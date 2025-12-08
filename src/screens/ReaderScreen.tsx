@@ -38,6 +38,7 @@ import {
   Volume2,
   AlertTriangle,
   BookOpen,
+  List,
 } from 'lucide-react-native';
 import {
   useSettingsStore,
@@ -49,12 +50,22 @@ import { typography, spacing, borderRadius, shadows } from '../theme';
 import { PdfViewerWithAnnotations } from '../components/pdf';
 import { BookReaderWithAnnotations } from '../components/reader';
 import { TtsToolbar } from '../components/audio';
+import {
+  BookmarksList,
+  BookCompletionModal,
+  Page69Toast,
+  DeveloperNoteModal,
+} from '../components/common';
 import type { RootStackParamList } from '../navigation/types';
 import type { HighlightColor } from '../types';
 import {
   getReadingProgress,
   saveReadingProgress,
 } from '../db/queries/readingProgress';
+import {
+  markBookCompletionCelebrated,
+  isBookCompletionCelebrated,
+} from '../db/queries/books';
 
 type ReaderRouteProp = RouteProp<RootStackParamList, 'Reader'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -67,15 +78,19 @@ const ToolButton = ({
   icon,
   isActive,
   onPress,
+  onLongPress,
   themeColors,
 }: {
   icon: ReactNode;
   isActive: boolean;
   onPress: () => void;
+  onLongPress?: () => void;
   themeColors: any;
 }) => (
   <TouchableOpacity
     onPress={onPress}
+    onLongPress={onLongPress}
+    delayLongPress={800}
     style={[
       styles.toolButton,
       {
@@ -100,6 +115,7 @@ export const ReaderScreen = () => {
     loadAnnotations,
     toggleBookmark,
     isBookmarked,
+    bookmarks,
     addHighlight,
     updateHighlight,
     deleteHighlight,
@@ -131,6 +147,15 @@ export const ReaderScreen = () => {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isTtsMode, setIsTtsMode] = useState(false);
+  const [showBookmarksList, setShowBookmarksList] = useState(false);
+  const [pdfKey, setPdfKey] = useState(0); // Force PDF remount on navigation
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [showPage69Toast, setShowPage69Toast] = useState(false);
+  const [showDeveloperNote, setShowDeveloperNote] = useState(false);
+  const [developerNoteContent, setDeveloperNoteContent] = useState({
+    title: '',
+    message: '',
+  });
 
   // Initialize TTS
   useEffect(() => {
@@ -167,6 +192,28 @@ export const ReaderScreen = () => {
 
       saveReadingProgress(bookId, page, 0, updatedTotal, 'pdf');
 
+      // Easter egg: Page 69 surprise 😏
+      if (page === 69) {
+        setShowPage69Toast(true);
+        // Hide toast after 4 seconds
+        setTimeout(() => {
+          setShowPage69Toast(false);
+        }, 4000);
+      }
+
+      // Check if book is completed (reached last page)
+      if (page === updatedTotal && updatedTotal > 0) {
+        // Check if we haven't shown celebration yet
+        const alreadyCelebrated = isBookCompletionCelebrated(bookId);
+        if (!alreadyCelebrated) {
+          // Show completion modal after a short delay
+          setTimeout(() => {
+            setShowCompletionModal(true);
+            markBookCompletionCelebrated(bookId);
+          }, 800);
+        }
+      }
+
       // If in TTS mode, stop current speech and start reading new page
       if (isTtsMode && currentBook?.filePath) {
         stopTts();
@@ -200,6 +247,50 @@ export const ReaderScreen = () => {
     [activeTool],
   );
 
+  // Handle long-press on annotation tools (easter egg)
+  const handleAnnotationLongPress = useCallback((tool: string) => {
+    const notes: Record<string, { title: string; message: string }> = {
+      highlight: {
+        title: 'Why Highlights?',
+        message: `Because I know you underline your favorite passages in real books. You go back to them when you need to feel something again.
+
+I wanted you to have that here too. Mark the words that matter. Come back to them whenever you need.
+
+Your highlights are safe here, just like the ones in your favorite worn-out paperbacks.`,
+      },
+      freehand: {
+        title: 'Why Freehand Drawing?',
+        message: `I've seen you doodle in the margins. Little stars, hearts, underlines that aren't quite straight.
+
+This is for those moments. When you want to mark something your way, not perfectly, but yours.
+
+Draw on your books. Make them messy. Make them real.`,
+      },
+      emoji: {
+        title: 'Why Emoji Reactions?',
+        message: `Sometimes words aren't enough. Sometimes a book makes you feel something so big that all you can do is drop a 😭 or a 🔥 in the margin.
+
+This is for those moments when you just need to react, to express, to feel.
+
+Your emotions matter. Even the ones that are just emojis.`,
+      },
+      tts: {
+        title: 'Why Text-to-Speech?',
+        message: `I know you love the deep voices of male leads in dark romance audiobooks. The way they make every word feel more intense, more real.
+
+I wanted to give you that option here. So you can close your eyes and just listen. Let the words wash over you.
+
+Pick a voice that feels right. One that makes the story come alive the way you love.`,
+      },
+    };
+
+    const note = notes[tool];
+    if (note) {
+      setDeveloperNoteContent(note);
+      setShowDeveloperNote(true);
+    }
+  }, []);
+
   // Handle PDF load complete
   const handleLoadComplete = useCallback(
     (total: number) => {
@@ -230,6 +321,40 @@ export const ReaderScreen = () => {
   const handleToggleControls = useCallback(() => {
     setControlsVisible(prev => !prev);
   }, []);
+
+  // Handle bookmark navigation
+  const handleNavigateToBookmark = useCallback(
+    (page: number) => {
+      setCurrentPage(page);
+      setPdfKey(prev => prev + 1); // Force PDF viewer remount
+      updateProgress(bookId, page);
+      saveReadingProgress(
+        bookId,
+        page,
+        0,
+        totalPages,
+        theme === 'dark' ? 'book' : 'pdf',
+      );
+
+      // If in TTS mode, stop and speak new page
+      if (isTtsMode && currentBook?.filePath) {
+        stopTts();
+        setTimeout(() => {
+          speakPage(currentBook.filePath, page);
+        }, 100);
+      }
+    },
+    [
+      bookId,
+      totalPages,
+      theme,
+      isTtsMode,
+      currentBook,
+      updateProgress,
+      stopTts,
+      speakPage,
+    ],
+  );
 
   // TTS mode handlers
   const handleActivateTts = useCallback(() => {
@@ -437,16 +562,25 @@ export const ReaderScreen = () => {
             </Text>
           </View>
 
-          <TouchableOpacity
-            onPress={handleBookmark}
-            style={styles.topBarButton}
-          >
-            {isBookmarked(currentPage) ? (
-              <BookmarkCheck size={24} color={themeColors.accentPrimary} />
-            ) : (
-              <Bookmark size={24} color={themeColors.textSecondary} />
-            )}
-          </TouchableOpacity>
+          <View style={styles.topBarRight}>
+            <TouchableOpacity
+              onPress={() => setShowBookmarksList(true)}
+              style={styles.topBarButton}
+            >
+              <List size={24} color={themeColors.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleBookmark}
+              style={styles.topBarButton}
+            >
+              {isBookmarked(currentPage) ? (
+                <BookmarkCheck size={24} color={themeColors.accentPrimary} />
+              ) : (
+                <Bookmark size={24} color={themeColors.textSecondary} />
+              )}
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       )}
 
@@ -480,6 +614,7 @@ export const ReaderScreen = () => {
           </View>
         ) : theme === 'dark' ? (
           <BookReaderWithAnnotations
+            key={`reader-${bookId}-${pdfKey}`}
             filePath={currentBook.filePath}
             bookId={bookId}
             currentPage={currentPage}
@@ -505,6 +640,7 @@ export const ReaderScreen = () => {
           />
         ) : (
           <PdfViewerWithAnnotations
+            key={`pdf-${bookId}-${pdfKey}`}
             source={currentBook.filePath}
             page={currentPage}
             onPageChange={handlePageChange}
@@ -588,6 +724,7 @@ export const ReaderScreen = () => {
               }
               isActive={activeTool === 'highlight'}
               onPress={() => handleToolSelect('highlight')}
+              onLongPress={() => handleAnnotationLongPress('highlight')}
               themeColors={themeColors}
             />
             <ToolButton
@@ -603,6 +740,7 @@ export const ReaderScreen = () => {
               }
               isActive={activeTool === 'freehand'}
               onPress={() => handleToolSelect('freehand')}
+              onLongPress={() => handleAnnotationLongPress('freehand')}
               themeColors={themeColors}
             />
             <ToolButton
@@ -618,6 +756,7 @@ export const ReaderScreen = () => {
               }
               isActive={activeTool === 'emoji'}
               onPress={() => handleToolSelect('emoji')}
+              onLongPress={() => handleAnnotationLongPress('emoji')}
               themeColors={themeColors}
             />
             <ToolButton
@@ -629,6 +768,7 @@ export const ReaderScreen = () => {
               }
               isActive={isTtsMode}
               onPress={handleActivateTts}
+              onLongPress={() => handleAnnotationLongPress('tts')}
               themeColors={themeColors}
             />
           </View>
@@ -855,6 +995,34 @@ export const ReaderScreen = () => {
           </View>
         </Animated.View>
       )}
+
+      {/* Bookmarks List Modal */}
+      <BookmarksList
+        visible={showBookmarksList}
+        bookmarks={bookmarks}
+        currentPage={currentPage}
+        onClose={() => setShowBookmarksList(false)}
+        onSelectPage={handleNavigateToBookmark}
+        themeColors={themeColors}
+      />
+
+      {/* Page 69 Easter Egg Toast */}
+      <Page69Toast visible={showPage69Toast} />
+
+      {/* Book Completion Modal (Easter Egg) */}
+      <BookCompletionModal
+        visible={showCompletionModal}
+        bookTitle={currentBook?.title || 'Book'}
+        onClose={() => setShowCompletionModal(false)}
+      />
+
+      {/* Developer Note Modal (Easter Egg) */}
+      <DeveloperNoteModal
+        visible={showDeveloperNote}
+        title={developerNoteContent.title}
+        message={developerNoteContent.message}
+        onClose={() => setShowDeveloperNote(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -895,6 +1063,10 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topBarRight: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   topBarCenter: {

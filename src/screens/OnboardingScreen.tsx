@@ -23,28 +23,28 @@ import { typography, spacing, borderRadius } from '../theme';
 // Onboarding pages
 const pages = [
   {
-    emoji: '✨',
-    title: 'Welcome to Reverie',
+    emoji: '🎂',
+    title: 'Happy Birthday',
     message:
-      'A quiet place made just for you.\nWhere stories come alive and\nevery page feels like home.',
+      'This is Reverie — your personal reading sanctuary.\n\nI built this for you because I know how much\nbooks mean to you.',
+  },
+  {
+    emoji: '💗',
+    title: 'Made Just for You',
+    message:
+      'Every feature here was designed thinking of you.\nThe way you lose yourself in books,\nthe way you highlight your favorite lines.',
+  },
+  {
+    emoji: '✨',
+    title: 'Your Features',
+    message:
+      'Highlight and annotate like a real book.\nDraw freehand on pages.\nBookmark favorite moments.\nListen with text-to-speech.',
   },
   {
     emoji: '📖',
-    title: 'Your Personal Library',
+    title: 'A Love Letter',
     message:
-      'Add your favorite books and\nkeep track of every adventure.\nHighlight the moments that matter.',
-  },
-  {
-    emoji: '🎧',
-    title: 'Immerse Yourself',
-    message:
-      'Listen to pages read aloud,\nplay soft ambient music,\nand lose yourself in the words.',
-  },
-  {
-    emoji: '💝',
-    title: 'Made with Love',
-    message:
-      'This app was created as a gift,\na small piece of my heart\nwrapped in code.',
+      "This isn't just an app.\nIt's a love letter to the reader in you.\n\nMade with more love than I know\nhow to put into words.\n\n— Atharv",
   },
 ];
 

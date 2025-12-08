@@ -22,7 +22,7 @@ import {
   Library,
   CheckCircle,
   FileText,
-  Sparkles,
+  Moon,
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -37,6 +37,7 @@ import Animated, {
 import { useSettingsStore, useBookStore } from '../store';
 import { typography, spacing, borderRadius, shadows } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
+import { ConfessionModal, DeveloperNoteModal } from '../components/common';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -75,6 +76,21 @@ export const HomeScreen = () => {
   const [greeting] = useState(getGreeting());
   const [encouragement] = useState(getEncouragement(!!lastOpenedBook));
 
+  // Moon icon easter egg state
+  const [moonTapCount, setMoonTapCount] = useState(0);
+  const [showConfession, setShowConfession] = useState(false);
+  const [confessionUnlocked, setConfessionUnlocked] = useState(false);
+  const moonTapTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  // Developer note easter egg state
+  const [showDeveloperNote, setShowDeveloperNote] = useState(false);
+  const [developerNoteContent, setDeveloperNoteContent] = useState({
+    title: '',
+    message: '',
+  });
+
   // Animation for the continue reading card
   const cardScale = useSharedValue(1);
 
@@ -87,9 +103,49 @@ export const HomeScreen = () => {
     }
   };
 
+  // Handle moon icon taps (3-7 taps reveals confession)
+  const handleMoonPress = () => {
+    // Clear previous timeout
+    if (moonTapTimeout.current) {
+      clearTimeout(moonTapTimeout.current);
+    }
+
+    const newCount = moonTapCount + 1;
+    setMoonTapCount(newCount);
+
+    // Random threshold between 3-7 taps
+    const threshold = confessionUnlocked
+      ? 1
+      : Math.floor(Math.random() * 5) + 3;
+
+    if (newCount >= threshold) {
+      setShowConfession(true);
+      setConfessionUnlocked(true);
+      setMoonTapCount(0);
+    } else {
+      // Reset tap count after 2 seconds of inactivity
+      moonTapTimeout.current = setTimeout(() => {
+        setMoonTapCount(0);
+      }, 2000);
+    }
+  };
+
   const cardAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: cardScale.value }],
   }));
+
+  // Handle long-press on stats section
+  const handleStatsLongPress = () => {
+    setDeveloperNoteContent({
+      title: 'Why Reading Stats?',
+      message: `I wanted you to see your progress. Not in a competitive way, but in a "look how many worlds you've explored" way.
+
+Every book you finish, every page you turn... I wanted you to have a quiet moment to celebrate that.
+
+Reading is your escape, your peace. These numbers? They're just a reminder of all the beautiful stories you've lived through.`,
+    });
+    setShowDeveloperNote(true);
+  };
 
   return (
     <SafeAreaView
@@ -112,7 +168,20 @@ export const HomeScreen = () => {
             >
               {greeting}
             </Text>
-            <Sparkles size={24} color={themeColors.accentSecondary} />
+            <TouchableOpacity
+              onPress={handleMoonPress}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Moon
+                size={24}
+                color={themeColors.accentSecondary}
+                fill={
+                  confessionUnlocked
+                    ? themeColors.accentSecondary
+                    : 'transparent'
+                }
+              />
+            </TouchableOpacity>
           </View>
           <Text
             style={[
@@ -251,15 +320,21 @@ export const HomeScreen = () => {
           entering={FadeInDown.duration(600).delay(400)}
           style={styles.statsSection}
         >
-          <Text
-            style={[
-              typography.ui.label,
-              styles.sectionLabel,
-              { color: themeColors.textSecondary },
-            ]}
+          <TouchableOpacity
+            onLongPress={handleStatsLongPress}
+            delayLongPress={800}
+            activeOpacity={1}
           >
-            YOUR READING JOURNEY
-          </Text>
+            <Text
+              style={[
+                typography.ui.label,
+                styles.sectionLabel,
+                { color: themeColors.textSecondary },
+              ]}
+            >
+              YOUR READING JOURNEY
+            </Text>
+          </TouchableOpacity>
 
           <View style={styles.statsGrid}>
             <View
@@ -371,6 +446,20 @@ export const HomeScreen = () => {
           </Text>
         </Animated.View>
       </ScrollView>
+
+      {/* Moon icon easter egg confession modal */}
+      <ConfessionModal
+        visible={showConfession}
+        onClose={() => setShowConfession(false)}
+      />
+
+      {/* Developer note easter egg modal */}
+      <DeveloperNoteModal
+        visible={showDeveloperNote}
+        title={developerNoteContent.title}
+        message={developerNoteContent.message}
+        onClose={() => setShowDeveloperNote(false)}
+      />
     </SafeAreaView>
   );
 };

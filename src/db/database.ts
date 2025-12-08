@@ -5,6 +5,7 @@
  */
 
 import { open, QuickSQLiteConnection } from 'react-native-quick-sqlite';
+import { runMigrations } from './migrations';
 
 const DATABASE_NAME = 'reverie.db';
 const DATABASE_VERSION = 1; // For future migrations
@@ -24,6 +25,16 @@ export const getDatabase = (): QuickSQLiteConnection => {
 
   database = open({ name: DATABASE_NAME });
   initializeTables(database);
+
+  // Run migrations to clean up data
+  runMigrations();
+
+  // Create unique index AFTER migration to prevent duplicates
+  database.execute(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_bookmarks_unique ON bookmarks(bookId, page);
+  `);
+  console.log('✅ Unique index for bookmarks created');
+
   return database;
 };
 
@@ -149,6 +160,10 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
   db.execute(`
     CREATE INDEX IF NOT EXISTS idx_bookmarks_bookId ON bookmarks(bookId);
   `);
+
+  // NOTE: Unique index for bookmarks is created AFTER migration runs
+  // to clean up duplicates first (see getDatabase function)
+
   db.execute(`
     CREATE INDEX IF NOT EXISTS idx_highlights_bookId ON highlights(bookId);
   `);

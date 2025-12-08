@@ -105,7 +105,10 @@ export const updateBookProgress = (id: string, currentPage: number): void => {
  * Update book total pages (called when PDF is first loaded)
  */
 export const updateBookTotalPages = (id: string, totalPages: number): void => {
-  executeUpdate('UPDATE books SET totalPages = ? WHERE id = ?', [totalPages, id]);
+  executeUpdate('UPDATE books SET totalPages = ? WHERE id = ?', [
+    totalPages,
+    id,
+  ]);
 };
 
 /**
@@ -142,4 +145,22 @@ export const getReadingStats = (): {
     completedBooks,
     totalPagesRead,
   };
+};
+
+/**
+ * Mark book as completion celebrated (easter egg shown)
+ */
+export const markBookCompletionCelebrated = (id: string): void => {
+  executeUpdate('UPDATE books SET completionCelebrated = 1 WHERE id = ?', [id]);
+};
+
+/**
+ * Check if book completion has been celebrated
+ */
+export const isBookCompletionCelebrated = (id: string): boolean => {
+  const books = executeQuery<{ completionCelebrated: number }>(
+    'SELECT completionCelebrated FROM books WHERE id = ?',
+    [id],
+  );
+  return books.length > 0 && books[0].completionCelebrated === 1;
 };
