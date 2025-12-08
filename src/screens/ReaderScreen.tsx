@@ -104,6 +104,9 @@ export const ReaderScreen = () => {
     updateHighlight,
     deleteHighlight,
     highlights,
+    addFreehandHighlight,
+    deleteFreehandHighlight,
+    freehandHighlights,
     addEmojiReaction,
     updateEmojiReaction,
     deleteEmojiReaction,
@@ -113,11 +116,7 @@ export const ReaderScreen = () => {
   const { bookId } = route.params;
 
   // TTS store
-  const {
-    initialize: initializeTts,
-    speakPage,
-    stop: stopTts,
-  } = useTtsStore();
+  const { initialize: initializeTts, speakPage, stop: stopTts } = useTtsStore();
 
   // State
   const [currentPage, setCurrentPage] = useState(1);
@@ -272,6 +271,25 @@ export const ReaderScreen = () => {
     [deleteHighlight],
   );
 
+  const handleAddFreehand = useCallback(
+    (
+      page: number,
+      path: string,
+      color: HighlightColor,
+      strokeWidth: number,
+    ) => {
+      addFreehandHighlight(page, path, color, strokeWidth);
+    },
+    [addFreehandHighlight],
+  );
+
+  const handleDeleteFreehand = useCallback(
+    (id: string) => {
+      deleteFreehandHighlight(id);
+    },
+    [deleteFreehandHighlight],
+  );
+
   const handleAddEmoji = useCallback(
     (page: number, x: number, y: number, emoji: string) => {
       addEmojiReaction(page, x, y, emoji);
@@ -308,6 +326,11 @@ export const ReaderScreen = () => {
   const pageHighlights = useMemo(
     () => highlights.filter(h => h.page === currentPage),
     [highlights, currentPage],
+  );
+
+  const pageFreehand = useMemo(
+    () => freehandHighlights.filter(h => h.page === currentPage),
+    [freehandHighlights, currentPage],
   );
 
   const pageEmojis = useMemo(
@@ -471,10 +494,13 @@ export const ReaderScreen = () => {
             onAddHighlight={handleAddHighlight}
             onUpdateHighlight={handleUpdateHighlight}
             onDeleteHighlight={handleDeleteHighlight}
+            onAddFreehand={handleAddFreehand}
+            onDeleteFreehand={handleDeleteFreehand}
             onAddEmoji={handleAddEmoji}
             onUpdateEmoji={handleUpdateEmoji}
             onDeleteEmoji={handleDeleteEmoji}
             pageHighlights={pageHighlights}
+            pageFreehand={pageFreehand}
             pageEmojis={pageEmojis}
           />
         ) : (
@@ -494,10 +520,13 @@ export const ReaderScreen = () => {
             onAddHighlight={handleAddHighlight}
             onUpdateHighlight={handleUpdateHighlight}
             onDeleteHighlight={handleDeleteHighlight}
+            onAddFreehand={handleAddFreehand}
+            onDeleteFreehand={handleDeleteFreehand}
             onAddEmoji={handleAddEmoji}
             onUpdateEmoji={handleUpdateEmoji}
             onDeleteEmoji={handleDeleteEmoji}
             pageHighlights={pageHighlights}
+            pageFreehand={pageFreehand}
             pageEmojis={pageEmojis}
           />
         )}
@@ -735,6 +764,97 @@ export const ReaderScreen = () => {
           </View>
         </Animated.View>
       )}
+
+      {/* Freehand Options - Color & Size Picker */}
+      {activeTool === 'freehand' && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={[
+            styles.highlightOptions,
+            {
+              backgroundColor: themeColors.surface,
+              borderColor: themeColors.border,
+            },
+            shadows.md,
+          ]}
+        >
+          {/* Color Picker */}
+          <View style={styles.optionsSection}>
+            <Text
+              style={[
+                typography.ui.small,
+                { color: themeColors.textSecondary, marginBottom: spacing.xs },
+              ]}
+            >
+              Color
+            </Text>
+            <View style={styles.colorOptions}>
+              {[
+                { color: 'yellow' as const, hex: '#FFEB3B' },
+                { color: 'green' as const, hex: '#4CAF50' },
+                { color: 'blue' as const, hex: '#2196F3' },
+                { color: 'pink' as const, hex: '#E91E63' },
+                { color: 'purple' as const, hex: '#9C27B0' },
+                { color: 'orange' as const, hex: '#FF9800' },
+              ].map(({ color, hex }) => (
+                <TouchableOpacity
+                  key={color}
+                  onPress={() => setHighlightColor(color)}
+                  style={[
+                    styles.colorButton,
+                    { backgroundColor: hex },
+                    highlightColor === color && [
+                      styles.selectedColorButton,
+                      { borderColor: themeColors.accentPrimary },
+                    ],
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* Size Picker */}
+          <View style={styles.optionsSection}>
+            <Text
+              style={[
+                typography.ui.small,
+                { color: themeColors.textSecondary, marginBottom: spacing.xs },
+              ]}
+            >
+              Brush Size
+            </Text>
+            <View style={styles.sizeOptions}>
+              {(['small', 'medium', 'large'] as const).map(size => {
+                const isSelected = highlightSize === size;
+                const textColor = isSelected
+                  ? '#FFFFFF'
+                  : themeColors.textSecondary;
+                const bgColor = isSelected
+                  ? themeColors.accentPrimary
+                  : themeColors.background;
+                return (
+                  <TouchableOpacity
+                    key={size}
+                    onPress={() => setHighlightSize(size)}
+                    style={[
+                      styles.sizeButton,
+                      {
+                        backgroundColor: bgColor,
+                        borderColor: themeColors.border,
+                      },
+                    ]}
+                  >
+                    <Text style={[typography.ui.small, { color: textColor }]}>
+                      {size.charAt(0).toUpperCase() + size.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </Animated.View>
+      )}
     </SafeAreaView>
   );
 };
@@ -860,6 +980,8 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     minWidth: 280,
+    zIndex: 100,
+    elevation: 100,
   },
   optionsSection: {
     marginBottom: spacing.sm,

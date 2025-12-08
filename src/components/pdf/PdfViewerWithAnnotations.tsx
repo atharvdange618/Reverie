@@ -12,7 +12,13 @@ import {
   EmojiPicker,
   EmojiReactionOverlay,
 } from '../annotations';
-import { HighlightColor, Highlight, EmojiReaction } from '../../types';
+import {
+  HighlightColor,
+  Highlight,
+  EmojiReaction,
+  FreehandHighlight,
+} from '../../types';
+import { FreehandOverlay } from '../annotations/FreehandOverlay';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -51,12 +57,20 @@ interface PdfViewerWithAnnotationsProps {
     height: number,
   ) => void;
   onDeleteHighlight: (id: string) => void;
+  onAddFreehand: (
+    page: number,
+    path: string,
+    color: HighlightColor,
+    strokeWidth: number,
+  ) => void;
+  onDeleteFreehand: (id: string) => void;
   onAddEmoji: (page: number, x: number, y: number, emoji: string) => void;
   onUpdateEmoji: (id: string, x: number, y: number) => void;
   onDeleteEmoji: (id: string) => void;
 
   // Current page annotations
   pageHighlights: Highlight[];
+  pageFreehand: FreehandHighlight[];
   pageEmojis: EmojiReaction[];
 }
 
@@ -78,10 +92,13 @@ export const PdfViewerWithAnnotations: React.FC<
   onAddHighlight,
   onUpdateHighlight,
   onDeleteHighlight,
+  onAddFreehand,
+  onDeleteFreehand,
   onAddEmoji,
   onUpdateEmoji,
   onDeleteEmoji,
   pageHighlights,
+  pageFreehand,
   pageEmojis,
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -149,7 +166,36 @@ export const PdfViewerWithAnnotations: React.FC<
             themeColors={themeColors}
           />
         )}
-
+        s{/* Freehand Overlay */}
+        {(activeTool === 'freehand' || pageFreehand.length > 0) && (
+          <FreehandOverlay
+            isActive={activeTool === 'freehand'}
+            color={highlightColor}
+            strokeWidth={
+              highlightSize === 'small'
+                ? 8
+                : highlightSize === 'medium'
+                ? 12
+                : 16
+            }
+            onPathComplete={(pathData: string) =>
+              onAddFreehand(
+                page,
+                pathData,
+                highlightColor,
+                highlightSize === 'small'
+                  ? 8
+                  : highlightSize === 'medium'
+                  ? 12
+                  : 16,
+              )
+            }
+            existingPaths={pageFreehand}
+            onDeletePath={onDeleteFreehand}
+            selectedPathId={null}
+            onSelectPath={() => {}}
+          />
+        )}
         {/* Emoji Reaction Overlay */}
         {(activeTool === 'emoji' || pageEmojis.length > 0) && (
           <EmojiReactionOverlay

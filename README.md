@@ -1,117 +1,84 @@
-# ✨ Reverie
+# ✨ Reverie ✨
 
-> _A quiet place made just for you. Where stories come alive and every page feels like home._
-
-**Reverie** is a personalized PDF reader app crafted with love as a birthday gift. It features a soft, romantic aesthetic with dark red and lavender accents, designed to make reading feel intimate and special.
-
-[![React Native](https://img.shields.io/badge/React%20Native-0.83.0-61DAFB?style=flat&logo=react)](https://reactnative.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat&logo=android&logoColor=white)](https://developer.android.com/)
-
-## 📖 Features
-
-- **Beautiful PDF Reading** - Clean, distraction-free reading experience
-- **Highlights & Annotations** - Mark your favorite passages with customizable colors
-- **Emoji Reactions** - React to moments that move you 💕
-- **Bookmarks** - Never lose your place in the story
-- **Text-to-Speech** - Listen to pages read aloud
-- **Ambient Music** - Soft background music to set the mood
-- **Dark Romance Theme** - Elegant dark red (#8B2635) with lavender (#D4B8E0) accents
-- **Personal Library** - Organize and track your reading journey
-
-## 🎨 Design
-
-Reverie uses a carefully crafted color palette:
-
-| Element          | Color                  |
-| ---------------- | ---------------------- |
-| Primary Accent   | `#8B2635` (Dark Red)   |
-| Secondary Accent | `#D4B8E0` (Lavender)   |
-| Background       | `#FAF8F5` (Warm Cream) |
-| Text             | `#2D2A26` (Soft Black) |
-
-**Typography:**
-
-- **Reading:** Literata (elegant serif for immersive reading)
-- **UI:** Inter (clean sans-serif for interface elements)
-
-## 🛠️ Tech Stack
-
-- **React Native 0.82.1** - Cross-platform mobile framework
-- **TypeScript** - Type-safe development
-- **Zustand** - Lightweight state management
-- **React Navigation** - Native navigation with bottom tabs
-- **react-native-quick-sqlite** - Fast, synchronous SQLite database
-- **react-native-pdf** - PDF rendering
-- **@shopify/react-native-skia** - Canvas drawing for freehand highlights
-- **react-native-reanimated** - Smooth animations
-- **react-native-track-player** - Background audio for ambient music
-- **react-native-tts** - Text-to-speech functionality
-
-## 📁 Project Structure
-
-```text
-src/
-├── assets/          # Fonts, images, and audio files
-├── components/      # Reusable UI components
-├── db/              # SQLite database & queries
-├── hooks/           # Custom React hooks
-├── navigation/      # React Navigation setup
-├── screens/         # App screens
-│   ├── HomeScreen.tsx
-│   ├── LibraryScreen.tsx
-│   ├── SettingsScreen.tsx
-│   ├── ReaderScreen.tsx
-│   └── OnboardingScreen.tsx
-├── store/           # Zustand state stores
-├── theme/           # Colors, typography, spacing
-├── types/           # TypeScript type definitions
-└── utils/           # Helper functions
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- React Native development environment ([Setup Guide](https://reactnative.dev/docs/set-up-your-environment))
-- Android Studio with an emulator or physical device
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/atharvdange618/Reverie.git
-cd Reverie
-
-# Install dependencies
-npm install
-
-# Apply patches for deprecated dependencies
-npx patch-package
-
-# Link fonts
-npx react-native-asset
-```
-
-### Running the App
-
-```bash
-# Start Metro bundler
-npm start
-
-# Run on Android (in a new terminal)
-npm run android
-```
-
-## 💝 Made with Love
-
-This app was created as a gift — a small piece of my heart wrapped in code. Every feature, every color choice, and every gentle animation was crafted with one person in mind.
-
-_"Some books are to be tasted, others to be swallowed, and some few to be chewed and digested."_
-— Francis Bacon
+_A state of dreamy meditation. Lost in a book. Lost in you._
 
 ---
 
-**Author:** Atharv Dange  
-**Email:** atharvdange.dev@gmail.com
+This isn't just an app.
+
+It's a quiet corner built with my own hands. A space that doesn't shout or compete for attention. It simply exists. Soft, warm, personal. Like a handwritten note slipped between pages.
+
+I wanted to give you something that feels like **yours**. Not borrowed from a crowded app store. Not designed for millions. Just for you. For the way you hold a book, for the worlds you disappear into, for the moments when nothing else matters but the next sentence.
+
+Every color was chosen thinking of you. Dark red. Deep, intense, unapologetic. Lavender. Soft, romantic, quietly beautiful. The way pages turn, the way highlights appear like brushstrokes on paper, the gentle music in the background. All of it carries the same intention: **to make reading feel sacred again**.
+
+---
+
+## What Lives Here
+
+**Your Books, Your Way**  
+This is where your stories live. Not files. Not PDFs. **Stories**. Each one tracked, remembered, waiting for you to return.
+
+**Highlight What Moves You**  
+Draw rectangles. Trace freehand like a real marker. Choose colors that match your mood. Yellow for joy. Pink for butterflies. Purple for the lines that break you a little.
+
+**Emojis for Feelings**  
+Because sometimes words aren't enough. A 💕 here, a 😭 there. The moments that make you pause. The ones you want to remember.
+
+**Listen When You're Tired**  
+Text-to-speech that reads to you. When your eyes are heavy but you can't stop. When you want to hear the story instead of reading it.
+
+**Soft Music for the Soul**  
+Ocean waves. Rain. Stars. Ambient sounds that fill the silence. You can focus. You can drift. You can just **be**.
+
+**Dark Mode That Doesn't Hurt**  
+Not harsh. Not clinical. Warm cream text on deep charcoal. Like reading by candlelight.
+
+---
+
+## Why This Exists
+
+Because I wanted to give you something no one else could.
+
+Because apps built for everyone feel like they're built for no one.
+
+Because reading should feel intimate, not transactional.
+
+Because you deserve a space that was made with your hands in mind, your heart in mind, your quiet hours in mind.
+
+This is my love letter to you, written in code instead of ink. Every line of it carries the same feeling: **I was thinking of you when I built this.**
+
+---
+
+## A Note on Sharing
+
+I didn't build this to share with the world.  
+I built it to share with **you**.
+
+The code is here, visible, because I wanted you to know there are no secrets, no tricks, no tracking. Just a gift, honestly made.
+
+But this isn't open for contributions. It's not a collaborative project. It's personal. Intentionally, unapologetically personal.
+
+If someone stumbles upon this and finds it beautiful, I hope it inspires them to build something for someone they love too. Not to copy it, but to create something equally personal. Equally intentional.
+
+---
+
+## What It's Built With
+
+React Native. TypeScript. SQLite.  
+Hours of learning. Nights of debugging. Moments of wanting to give up but not giving up.
+
+Because some things are worth the struggle.  
+Because **you** are worth the struggle.
+
+---
+
+_"Some books are to be tasted, others to be swallowed, and some few to be chewed and digested."_  
+— Francis Bacon
+
+This app? It's meant to be savored. Slowly. Quietly. Like the stories it holds.
+
+---
+
+**Made by Atharv**  
+_For the one who makes me want to build impossible things_
