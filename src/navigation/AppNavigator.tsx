@@ -12,7 +12,12 @@ import { RootStackParamList } from './types';
 import { MainTabNavigator } from './MainTabNavigator';
 import { useSettingsStore, useBookStore } from '../store';
 import { getDatabase } from '../db';
-import { OnboardingScreen, ReaderScreen, VoiceSelectionScreen } from '../screens';
+import {
+  OnboardingScreen,
+  ReaderScreen,
+  VoiceSelectionScreen,
+  AboutScreen,
+} from '../screens';
 import { FloatingMusicPlayer } from '../components/audio';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -107,6 +112,13 @@ export const AppNavigator = () => {
             animation: 'slide_from_right',
           }}
           component={VoiceSelectionScreen}
+        />
+        <Stack.Screen
+          name="About"
+          options={{
+            animation: 'slide_from_right',
+          }}
+          component={AboutScreen}
         />
       </Stack.Navigator>
       {ambientMusicEnabled && (

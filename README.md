@@ -46,7 +46,7 @@ Because reading should feel intimate, not transactional.
 
 Because you deserve a space that was made with your hands in mind, your heart in mind, your quiet hours in mind.
 
-This is my love letter to you, written in code instead of ink. Every line of it carries the same feeling: **I was thinking of you when I built this.**
+This is my gift to you, made out of code instead of ink. Every line of it carries the same feeling: **I was thinking of you when I built this.**
 
 ---
 

@@ -16,6 +16,7 @@ export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   Reader: { bookId: string };
   VoiceSelection: undefined;
+  About: undefined;
 };
 
 // Main Tab Navigator

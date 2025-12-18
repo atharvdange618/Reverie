@@ -8,3 +8,4 @@ export { SettingsScreen } from './SettingsScreen';
 export { ReaderScreen } from './ReaderScreen';
 export { OnboardingScreen } from './OnboardingScreen';
 export { VoiceSelectionScreen } from './VoiceSelectionScreen';
+export { AboutScreen } from './AboutScreen';

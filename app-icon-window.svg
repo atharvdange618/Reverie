@@ -1,0 +1,65 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none"
+    xmlns="http://www.w3.org/2000/svg">
+    <!-- Dark background -->
+    <rect width="1024" height="1024" fill="#1A1A1A" rx="180" />
+
+    <!-- Window frame -->
+    <g transform="translate(512, 512)">
+        <!-- Outer window frame -->
+        <rect x="-240" y="-240" width="480" height="480"
+            fill="none" stroke="#FFFFFF" stroke-width="12" rx="8" />
+
+        <!-- Window panes (cross divider) -->
+        <line x1="0" y1="-240" x2="0" y2="240" stroke="#FFFFFF" stroke-width="12" />
+        <line x1="-240" y1="0" x2="240" y2="0" stroke="#FFFFFF" stroke-width="12" />
+
+        <!-- Night sky through window -->
+        <defs>
+            <clipPath id="windowClip">
+                <rect x="-240" y="-240" width="480" height="480" rx="8" />
+            </clipPath>
+            <radialGradient id="nightSky" cx="60%" cy="30%" r="80%">
+                <stop offset="0%" style="stop-color:#2A2A3A;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#0A0A0A;stop-opacity:1" />
+            </radialGradient>
+        </defs>
+
+        <!-- Sky background -->
+        <rect x="-240" y="-240" width="480" height="480"
+            fill="url(#nightSky)" clip-path="url(#windowClip)" />
+
+        <!-- Large crescent moon (top right quadrant) -->
+        <g transform="translate(80, -80)" clip-path="url(#windowClip)">
+            <circle cx="0" cy="0" r="80" fill="#F5F5DC" />
+            <circle cx="25" cy="-8" r="74" fill="url(#nightSky)" />
+        </g>
+
+        <!-- Stars in the night sky -->
+        <g clip-path="url(#windowClip)">
+            <g fill="#FFFFFF">
+                <circle cx="-180" cy="-160" r="3" />
+                <circle cx="-100" cy="-190" r="4" />
+                <circle cx="-150" cy="-80" r="3" />
+                <circle cx="180" cy="-180" r="4" />
+                <circle cx="140" cy="-140" r="3" />
+                <circle cx="-200" cy="60" r="3" />
+                <circle cx="-120" cy="120" r="4" />
+                <circle cx="160" cy="100" r="3" />
+                <circle cx="100" cy="180" r="4" />
+                <circle cx="-60" cy="160" r="3" />
+            </g>
+
+            <!-- Twinkling stars (smaller) -->
+            <g fill="#FFFFFF" opacity="0.6">
+                <circle cx="-70" cy="-140" r="2" />
+                <circle cx="50" cy="-200" r="2" />
+                <circle cx="200" cy="140" r="2" />
+                <circle cx="-180" cy="180" r="2" />
+            </g>
+        </g>
+
+        <!-- Window sill -->
+        <rect x="-260" y="240" width="520" height="30" fill="#FFFFFF" opacity="0.8" rx="4" />
+    </g>
+
+</svg>

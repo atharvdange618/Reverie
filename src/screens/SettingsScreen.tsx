@@ -566,15 +566,16 @@ export const SettingsScreen = () => {
 
           <SettingsRow
             icon={<Heart size={20} color={themeColors.accentPrimary} />}
-            title="Made with love"
-            subtitle="A personal gift, just for you"
+            title="About Reverie"
+            subtitle="A personal note from the developer"
+            onPress={() => navigation.navigate('About')}
             themeColors={themeColors}
           />
 
           <SettingsRow
             icon={<Sparkles size={20} color={themeColors.accentPrimary} />}
-            title="Reverie"
-            subtitle="Version 1.0.0"
+            title="Version"
+            subtitle="1.0.0"
             themeColors={themeColors}
           />
         </Animated.View>

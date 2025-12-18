@@ -1,0 +1,51 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none"
+    xmlns="http://www.w3.org/2000/svg">
+    <!-- Dark background -->
+    <rect width="1024" height="1024" fill="#1A1A1A" rx="180" />
+
+    <!-- Reading Glasses -->
+    <g transform="translate(512, 512)">
+        <!-- Left lens frame -->
+        <circle cx="-120" cy="0" r="100"
+            fill="none" stroke="#FFFFFF" stroke-width="10" />
+
+        <!-- Right lens frame -->
+        <circle cx="120" cy="0" r="100"
+            fill="none" stroke="#FFFFFF" stroke-width="10" />
+
+        <!-- Bridge connecting lenses -->
+        <path d="M -25 -15 Q 0 -25, 25 -15"
+            fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" />
+
+        <!-- Left temple arm -->
+        <path d="M -220 0 L -280 -10 Q -320 -15, -340 20"
+            fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" />
+
+        <!-- Right temple arm -->
+        <path d="M 220 0 L 280 -10 Q 320 -15, 340 20"
+            fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" />
+
+        <!-- Lens tint/reflection (subtle) -->
+        <circle cx="-120" cy="0" r="95" fill="#FFFFFF" opacity="0.05" />
+        <circle cx="120" cy="0" r="95" fill="#FFFFFF" opacity="0.05" />
+
+        <!-- Light reflection on lenses -->
+        <ellipse cx="-145" cy="-25" rx="20" ry="30" fill="#FFFFFF" opacity="0.3" />
+        <ellipse cx="95" cy="-25" rx="20" ry="30" fill="#FFFFFF" opacity="0.3" />
+
+        <!-- Crescent moon reflection in left lens -->
+        <g transform="translate(-120, -10)">
+            <circle cx="0" cy="0" r="25" fill="#F5F5DC" opacity="0.8" />
+            <circle cx="8" cy="-2" r="23" fill="#1A1A1A" />
+        </g>
+
+        <!-- Stars around glasses -->
+        <g fill="#FFFFFF" opacity="0.5">
+            <circle cx="-260" cy="-80" r="3" />
+            <circle cx="260" cy="-80" r="4" />
+            <circle cx="-240" cy="100" r="3" />
+            <circle cx="240" cy="100" r="3" />
+            <circle cx="0" cy="-140" r="4" />
+        </g>
+    </g>
+</svg>

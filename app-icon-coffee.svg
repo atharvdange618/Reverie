@@ -1,0 +1,58 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none"
+    xmlns="http://www.w3.org/2000/svg">
+    <!-- Dark background -->
+    <rect width="1024" height="1024" fill="#1A1A1A" rx="180" />
+
+    <!-- Coffee Cup -->
+    <g transform="translate(512, 512)">
+        <!-- Cup body (trapezoid shape) -->
+        <path
+            d="M -120 -50 L -80 150 Q -80 170, -60 170 L 60 170 Q 80 170, 80 150 L 120 -50 Q 120 -70, 100 -70 L -100 -70 Q -120 -70, -120 -50 Z"
+            fill="none" stroke="#FFFFFF" stroke-width="10" />
+
+        <!-- Cup rim -->
+        <ellipse cx="0" cy="-70" rx="120" ry="15" fill="#FFFFFF" opacity="0.2" />
+        <ellipse cx="0" cy="-70" rx="120" ry="15" fill="none" stroke="#FFFFFF" stroke-width="10" />
+
+        <!-- Coffee inside cup -->
+        <ellipse cx="0" cy="-60" rx="105" ry="12" fill="#FFFFFF" opacity="0.1" />
+
+        <!-- Handle -->
+        <path d="M 120 -20 Q 180 -20, 180 40 Q 180 100, 120 100"
+            fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" />
+
+        <!-- Saucer -->
+        <ellipse cx="0" cy="170" rx="150" ry="20" fill="none" stroke="#FFFFFF" stroke-width="10" />
+        <ellipse cx="0" cy="170" rx="150" ry="20" fill="#FFFFFF" opacity="0.1" />
+
+        <!-- Steam wisps rising from cup -->
+        <g fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity="0.6">
+            <path d="M -40 -90 Q -50 -130, -35 -170 Q -20 -210, -40 -250">
+                <animate attributeName="opacity" values="0.6;0.3;0.6" dur="3s"
+                    repeatCount="indefinite" />
+            </path>
+            <path d="M 0 -95 Q -10 -140, 5 -185 Q 20 -230, 0 -270">
+                <animate attributeName="opacity" values="0.5;0.7;0.5" dur="2.5s"
+                    repeatCount="indefinite" />
+            </path>
+            <path d="M 40 -90 Q 50 -135, 35 -180 Q 20 -220, 35 -255">
+                <animate attributeName="opacity" values="0.4;0.6;0.4" dur="3.5s"
+                    repeatCount="indefinite" />
+            </path>
+        </g>
+
+        <!-- Crescent moon in the steam -->
+        <g transform="translate(0, -220)">
+            <circle cx="0" cy="0" r="35" fill="#F5F5DC" />
+            <circle cx="12" cy="-3" r="32" fill="#1A1A1A" />
+        </g>
+
+        <!-- Small stars around the steam/moon -->
+        <g fill="#FFFFFF" opacity="0.5">
+            <circle cx="-70" cy="-240" r="3" />
+            <circle cx="65" cy="-230" r="3" />
+            <circle cx="-50" cy="-180" r="2" />
+            <circle cx="50" cy="-190" r="2" />
+        </g>
+    </g>
+</svg>

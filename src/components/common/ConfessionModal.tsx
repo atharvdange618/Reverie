@@ -69,7 +69,7 @@ Every feature, every detail, every soft color... I thought of you.
 
 The way you lose yourself in books, the way you highlight your favorite lines, the way you come back to them when you need comfort.
 
-This isn't just an app. It's a love letter wrapped in code.
+This isn't just an app. It's a gift wrapped in code.
 
 For all the stories you've shared with me, for all the quotes you've read aloud, for the way your eyes light up when you talk about a book that moved you.
 
