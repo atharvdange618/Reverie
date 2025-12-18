@@ -234,6 +234,19 @@ export const ReaderScreen = () => {
     ],
   );
 
+  // Rare bookmark icon - 5-10% chance for special icons
+  const getRareBookmarkIcon = useMemo(() => {
+    if (!isBookmarked(currentPage)) return null;
+
+    const random = Math.random();
+    // 10% chance for rare icons
+    if (random < 0.1) {
+      const rareIcons = ['✨', '💫', '🌙', '⭐', '💝', '🦋'];
+      return rareIcons[Math.floor(Math.random() * rareIcons.length)];
+    }
+    return null;
+  }, [currentPage, isBookmarked]);
+
   // Handle bookmark toggle
   const handleBookmark = useCallback(() => {
     toggleBookmark(currentPage);
@@ -575,7 +588,13 @@ Pick a voice that feels right. One that makes the story come alive the way you l
               style={styles.topBarButton}
             >
               {isBookmarked(currentPage) ? (
-                <BookmarkCheck size={24} color={themeColors.accentPrimary} />
+                getRareBookmarkIcon ? (
+                  <Text style={styles.rareBookmarkIcon}>
+                    {getRareBookmarkIcon}
+                  </Text>
+                ) : (
+                  <BookmarkCheck size={24} color={themeColors.accentPrimary} />
+                )
               ) : (
                 <Bookmark size={24} color={themeColors.textSecondary} />
               )}
@@ -1183,6 +1202,10 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     borderWidth: 1.5,
     alignItems: 'center',
+  },
+  rareBookmarkIcon: {
+    fontSize: 24,
+    textAlign: 'center',
   },
 });
 

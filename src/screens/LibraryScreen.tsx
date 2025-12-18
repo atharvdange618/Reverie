@@ -67,6 +67,21 @@ const getBookPattern = (title: string): string => {
   return patterns[hash % patterns.length];
 };
 
+// Detect Mindfuck series books
+const detectMindfuckSeries = (title: string): boolean => {
+  const lowerTitle = title.toLowerCase();
+  const patterns = [
+    'mindfuck',
+    'mind fuck',
+    'the hacker',
+    'the ritual',
+    'the game maker',
+    'the diamond',
+    'the watcher',
+  ];
+  return patterns.some(pattern => lowerTitle.includes(pattern));
+};
+
 interface BookCardProps {
   book: BookWithProgress;
   onPress: () => void;
@@ -87,6 +102,7 @@ const BookCard = ({
   const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
   const [thumbnailError, setThumbnailError] = useState(false);
   const pattern = getBookPattern(book.title);
+  const isMindfuckSeries = detectMindfuckSeries(book.title);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -153,15 +169,27 @@ const BookCard = ({
 
           {/* Book Info */}
           <View style={styles.bookInfo}>
-            <Text
-              style={[
-                typography.ui.bodyMedium,
-                { color: themeColors.textPrimary },
-              ]}
-              numberOfLines={2}
-            >
-              {book.title}
-            </Text>
+            <View style={styles.titleRow}>
+              <Text
+                style={[
+                  typography.ui.bodyMedium,
+                  { color: themeColors.textPrimary, flex: 1 },
+                ]}
+                numberOfLines={2}
+              >
+                {book.title}
+              </Text>
+              {isMindfuckSeries && (
+                <View
+                  style={[
+                    styles.seriesBadge,
+                    { backgroundColor: themeColors.accentSecondary },
+                  ]}
+                >
+                  <Text style={styles.seriesBadgeText}>🧠</Text>
+                </View>
+              )}
+            </View>
 
             {/* Progress */}
             <View style={styles.progressRow}>
@@ -197,11 +225,25 @@ const BookCard = ({
   );
 };
 
+// Romantic quotes for empty library state
+const EMPTY_LIBRARY_QUOTES = [
+  '"In the vast library of life, every unread story awaits its reader."',
+  '"A library empty is a heart waiting to be filled with worlds."',
+  '"The best stories are the ones we haven\'t discovered yet."',
+  '"Between these pages lie universes unexplored."',
+  '"Every great love affair begins with a single page."',
+];
+
 export const LibraryScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { themeColors } = useSettingsStore();
   const { books, deleteBook, addBook, isLoading } = useBookStore();
   const [isImporting, setIsImporting] = useState(false);
+  const [emptyQuote] = useState(
+    EMPTY_LIBRARY_QUOTES[
+      Math.floor(Math.random() * EMPTY_LIBRARY_QUOTES.length)
+    ],
+  );
   const [dialog, setDialog] = useState<{
     visible: boolean;
     title: string;
@@ -318,7 +360,7 @@ export const LibraryScreen = () => {
         },
       ]}
     >
-      <BookOpen size={64} color={themeColors.textSecondary} />
+      <BookOpen size={64} color={themeColors.textSecondary} opacity={0.5} />
       <Text
         style={[
           typography.ui.h3,
@@ -329,7 +371,7 @@ export const LibraryScreen = () => {
           },
         ]}
       >
-        No books yet
+        Your Library Awaits
       </Text>
       <Text
         style={[
@@ -337,18 +379,20 @@ export const LibraryScreen = () => {
           {
             color: themeColors.textSecondary,
             textAlign: 'center',
-            marginTop: spacing.sm,
-            marginBottom: spacing.lg,
+            marginTop: spacing.md,
+            marginHorizontal: spacing.lg,
+            fontStyle: 'italic',
+            lineHeight: 22,
           },
         ]}
       >
-        Add your first PDF to start reading
+        {emptyQuote}
       </Text>
       <TouchableOpacity
         onPress={handleAddBook}
         style={[
           styles.addButtonLarge,
-          { backgroundColor: themeColors.accentPrimary },
+          { backgroundColor: themeColors.accentPrimary, marginTop: spacing.xl },
         ]}
       >
         <View style={styles.addButtonContent}>
@@ -359,7 +403,7 @@ export const LibraryScreen = () => {
               { color: '#FFFFFF', marginLeft: spacing.xs },
             ]}
           >
-            Add
+            Add Your First Book
           </Text>
         </View>
       </TouchableOpacity>
@@ -488,6 +532,20 @@ const styles = StyleSheet.create({
   },
   bookInfo: {
     padding: spacing.md,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.xs,
+  },
+  seriesBadge: {
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+    marginTop: 2,
+  },
+  seriesBadgeText: {
+    fontSize: 14,
   },
   progressRow: {
     flexDirection: 'row',

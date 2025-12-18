@@ -43,8 +43,19 @@ export const BookmarksList: React.FC<BookmarksListProps> = ({
     onClose();
   };
 
+  // Generate rare bookmark icon (10% chance)
+  const getRareBookmarkIcon = (page: number): string | null => {
+    const random = (page * 7) % 100; // Deterministic based on page number
+    if (random < 10) {
+      const rareIcons = ['✨', '💫', '🌙', '⭐', '💝', '🦋'];
+      return rareIcons[page % rareIcons.length];
+    }
+    return null;
+  };
+
   const renderBookmark = ({ item }: { item: Bookmark }) => {
     const isCurrentPage = item.page === currentPage;
+    const rareIcon = getRareBookmarkIcon(item.page);
 
     return (
       <TouchableOpacity
@@ -63,14 +74,18 @@ export const BookmarksList: React.FC<BookmarksListProps> = ({
         activeOpacity={0.7}
       >
         <View style={styles.bookmarkIcon}>
-          <BookmarkCheck
-            size={20}
-            color={
-              isCurrentPage
-                ? themeColors.accentPrimary
-                : themeColors.textSecondary
-            }
-          />
+          {rareIcon ? (
+            <Text style={styles.rareIcon}>{rareIcon}</Text>
+          ) : (
+            <BookmarkCheck
+              size={20}
+              color={
+                isCurrentPage
+                  ? themeColors.accentPrimary
+                  : themeColors.textSecondary
+              }
+            />
+          )}
         </View>
         <View style={styles.bookmarkInfo}>
           <Text
@@ -225,6 +240,10 @@ const styles = StyleSheet.create({
   },
   bookmarkIcon: {
     marginRight: spacing.md,
+  },
+  rareIcon: {
+    fontSize: 20,
+    textAlign: 'center',
   },
   bookmarkInfo: {
     flex: 1,

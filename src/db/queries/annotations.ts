@@ -50,15 +50,18 @@ export const removeBookmark = (bookId: string, page: number): void => {
   ]);
 };
 
-export const toggleBookmark = (bookId: string, page: number): boolean => {
+export const toggleBookmark = (
+  bookId: string,
+  page: number,
+): { added: boolean; bookmark?: Bookmark } => {
   const isBookmarked = isPageBookmarked(bookId, page);
 
   if (isBookmarked) {
     removeBookmark(bookId, page);
-    return false;
+    return { added: false };
   } else {
-    addBookmark(bookId, page);
-    return true;
+    const bookmark = addBookmark(bookId, page);
+    return { added: true, bookmark };
   }
 };
 
@@ -200,15 +203,12 @@ export const addEmojiReaction = (
   return { id, bookId, page, x, y, emoji, createdAt: now };
 };
 
-export const updateEmojiReaction = (
-  id: string,
-  x: number,
-  y: number,
-): void => {
-  executeUpdate(
-    'UPDATE emoji_reactions SET x = ?, y = ? WHERE id = ?',
-    [x, y, id],
-  );
+export const updateEmojiReaction = (id: string, x: number, y: number): void => {
+  executeUpdate('UPDATE emoji_reactions SET x = ?, y = ? WHERE id = ?', [
+    x,
+    y,
+    id,
+  ]);
 };
 
 export const deleteEmojiReaction = (id: string): void => {

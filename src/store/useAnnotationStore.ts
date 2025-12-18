@@ -14,7 +14,6 @@ import {
 } from '../types';
 import {
   getBookmarks,
-  addBookmark as dbAddBookmark,
   toggleBookmark as dbToggleBookmark,
   getHighlights,
   addHighlight as dbAddHighlight,
@@ -165,12 +164,11 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     const { currentBookId } = get();
     if (!currentBookId) throw new Error('No book loaded');
 
-    const isNowBookmarked = dbToggleBookmark(currentBookId, page);
+    const result = dbToggleBookmark(currentBookId, page);
 
-    if (isNowBookmarked) {
-      const bookmark = dbAddBookmark(currentBookId, page);
+    if (result.added && result.bookmark) {
       set(state => ({
-        bookmarks: [...state.bookmarks, bookmark].sort(
+        bookmarks: [...state.bookmarks, result.bookmark!].sort(
           (a, b) => a.page - b.page,
         ),
         counts: { ...state.counts, bookmarks: state.counts.bookmarks + 1 },
@@ -182,7 +180,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
       }));
     }
 
-    return isNowBookmarked;
+    return result.added;
   },
 
   isBookmarked: page => {
@@ -311,7 +309,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
 
     set(state => ({
       emojiReactions: state.emojiReactions.map(r =>
-        r.id === id ? { ...r, x, y } : r
+        r.id === id ? { ...r, x, y } : r,
       ),
     }));
   },
