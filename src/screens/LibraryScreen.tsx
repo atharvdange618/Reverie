@@ -15,7 +15,6 @@ import {
   FlatList,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -33,7 +32,7 @@ import { BookOpen, Plus, Library } from 'lucide-react-native';
 import { useSettingsStore, useBookStore } from '../store';
 import { typography, spacing, borderRadius, shadows } from '../theme';
 import { pickPdfFile, extractTitleFromFilename } from '../utils/pdf';
-import { Dialog } from '../components/common';
+import { Dialog, LoadingWithQuote } from '../components/common';
 import type { RootStackParamList } from '../navigation/types';
 import type { BookWithProgress } from '../types';
 import { PdfThumbnail } from '../components/pdf';
@@ -367,6 +366,21 @@ export const LibraryScreen = () => {
     </Animated.View>
   );
 
+  // Show loading overlay during import
+  if (isImporting) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: themeColors.background }]}
+        edges={['top']}
+      >
+        <LoadingWithQuote
+          themeColors={themeColors}
+          message="Importing your book..."
+        />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
@@ -389,18 +403,13 @@ export const LibraryScreen = () => {
         <Animated.View entering={FadeIn.duration(400).delay(300)}>
           <TouchableOpacity
             onPress={handleAddBook}
-            disabled={isImporting}
             style={[
               styles.fab,
               { backgroundColor: themeColors.accentPrimary },
               shadows.lg,
             ]}
           >
-            {isImporting ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Plus size={28} color="#FFFFFF" />
-            )}
+            <Plus size={28} color="#FFFFFF" />
           </TouchableOpacity>
         </Animated.View>
       )}

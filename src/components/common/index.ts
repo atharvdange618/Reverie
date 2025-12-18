@@ -11,3 +11,4 @@ export { ConfessionModal } from './ConfessionModal';
 export { BookCompletionModal } from './BookCompletionModal';
 export { Page69Toast } from './Page69Toast';
 export { DeveloperNoteModal } from './DeveloperNoteModal';
+export { LoadingWithQuote } from './LoadingWithQuote';

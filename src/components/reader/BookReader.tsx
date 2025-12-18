@@ -3,7 +3,6 @@ import {
   View,
   ScrollView,
   Text,
-  ActivityIndicator,
   StyleSheet,
   useColorScheme,
   NativeSyntheticEvent,
@@ -14,6 +13,7 @@ import {
 import { BookContent, TextExtractor } from '../../utils';
 import { colors, fontFamilies, spacing, typography } from '../../theme';
 import { useSettingsStore } from '../../store';
+import { LoadingWithQuote } from '../common';
 import {
   getReadingProgress,
   saveReadingProgress,
@@ -64,6 +64,7 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
     const [bookContent, setBookContent] = useState<BookContent | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { themeColors } = useSettingsStore();
     const [currentPage, setCurrentPage] = useState(1);
     const [scrollPosition, setScrollPosition] = useState(0);
 
@@ -189,12 +190,10 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
 
     if (loading) {
       return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
-          <ActivityIndicator size="large" color={theme.text} />
-          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
-            Extracting text from PDF...
-          </Text>
-        </View>
+        <LoadingWithQuote
+          themeColors={themeColors}
+          message="Preparing your book..."
+        />
       );
     }
 

@@ -26,7 +26,7 @@ const pages = [
     emoji: '🎂',
     title: 'Happy Birthday',
     message:
-      'This is Reverie — your personal reading sanctuary.\n\nI built this for you because I know how much\nbooks mean to you.',
+      'This is Reverie - your personal reading sanctuary.\n\nI built this for you because I know how much\nbooks mean to you.',
   },
   {
     emoji: '💗',
