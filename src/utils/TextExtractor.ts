@@ -191,3 +191,12 @@ export class TextExtractor {
     };
   }
 }
+
+export const formatExtractedText = (text: string): string => {
+  return text
+    .replace(/\n{2,}/g, '\n\n')
+    .replace(/-\n/g, '')
+    .replace(/([^\n])\n([^\n])/g, '$1 $2')
+    .replace(/  +/g, ' ')
+    .trim();
+};

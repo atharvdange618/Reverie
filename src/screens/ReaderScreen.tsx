@@ -15,6 +15,7 @@ import React, {
   useEffect,
   ReactNode,
   useMemo,
+  useRef,
 } from 'react';
 import {
   View,
@@ -152,10 +153,29 @@ export const ReaderScreen = () => {
     title: '',
     message: '',
   });
+  const [bookReaderLoading, setBookReaderLoading] = useState(false);
 
   useEffect(() => {
     initializeTts();
   }, [initializeTts]);
+
+  // Proactively set loading state when switching TO dark theme
+  // Only watch theme changes, not currentPage, to avoid stale values
+  const prevThemeRef = useRef(theme);
+  useEffect(() => {
+    const previousTheme = prevThemeRef.current;
+    if (previousTheme !== 'dark' && theme === 'dark' && currentPage > 1) {
+      console.log(
+        'Theme switched to dark, setting loading for page:',
+        currentPage,
+      );
+      setBookReaderLoading(true);
+    } else if (theme !== 'dark') {
+      setBookReaderLoading(false);
+    }
+    prevThemeRef.current = theme;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [theme]); // Only depend on theme to get current value of currentPage at theme change time
 
   useEffect(() => {
     const book = loadBook(bookId);
@@ -165,6 +185,10 @@ export const ReaderScreen = () => {
         setCurrentPage(progress.currentPage);
         setTotalPages(progress.totalPages);
       } else {
+        // Only set loading for initial dark mode load, not theme switches
+        if (theme === 'dark') {
+          setBookReaderLoading(true);
+        }
         setCurrentPage(book.currentPage || 1);
         setTotalPages(book.totalPages);
       }
@@ -426,6 +450,20 @@ Pick a voice that feels right. One that makes the story come alive the way you l
     [deleteEmojiReaction],
   );
 
+  const handleBookReaderLoadingChange = useCallback(
+    (loading: boolean) => {
+      console.log(
+        'BookReader loading state changed:',
+        loading,
+        'Current page:',
+        currentPage,
+      );
+      // Always update the loading state from BookReader
+      setBookReaderLoading(loading);
+    },
+    [currentPage],
+  );
+
   const progress =
     totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0;
 
@@ -605,6 +643,7 @@ Pick a voice that feels right. One that makes the story come alive the way you l
             currentPage={currentPage}
             onPageChanged={handlePageChange}
             onLoadComplete={handleLoadComplete}
+            onLoadingChange={handleBookReaderLoadingChange}
             enableDarkMode={true}
             onToggleControls={handleToggleControls}
             activeTool={activeTool}
@@ -980,6 +1019,48 @@ Pick a voice that feels right. One that makes the story come alive the way you l
       />
 
       <Page69Toast visible={showPage69Toast} />
+
+      {bookReaderLoading && theme === 'dark' && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 9999,
+              elevation: 9999,
+            },
+          ]}
+        >
+          <View
+            style={{
+              backgroundColor: themeColors.surface,
+              padding: spacing['2xl'],
+              borderRadius: borderRadius.xl,
+              alignItems: 'center',
+              maxWidth: '80%',
+              ...shadows.lg,
+            }}
+          >
+            <ActivityIndicator size="large" color={themeColors.accentPrimary} />
+            <Text
+              style={[
+                typography.ui.bodyMedium,
+                {
+                  color: themeColors.textPrimary,
+                  marginTop: spacing.lg,
+                  textAlign: 'center',
+                },
+              ]}
+            >
+              Scrolling to page {currentPage}
+            </Text>
+          </View>
+        </Animated.View>
+      )}
 
       <BookCompletionModal
         visible={showCompletionModal}

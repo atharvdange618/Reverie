@@ -159,46 +159,57 @@ const ThemeButton = ({
 };
 
 const FontSizeSelector = ({ themeColors }: { themeColors: any }) => {
-  const { readerFontSize, setReaderFontSize } = useSettingsStore();
-  const sizes = [14, 16, 18, 20, 22, 24];
+  const { bookReaderFontSize, setBookReaderFontSize } = useSettingsStore();
+
+  const sizeOptions = [
+    { multiplier: 1.0, label: '14' },
+    { multiplier: 1.14, label: '16' },
+    { multiplier: 1.29, label: '18' },
+    { multiplier: 1.43, label: '20' },
+    { multiplier: 1.57, label: '22' },
+    { multiplier: 1.71, label: '24' },
+  ];
+
+  const currentSize =
+    sizeOptions.find(
+      opt => Math.abs(opt.multiplier - bookReaderFontSize) < 0.05,
+    ) || sizeOptions[2];
 
   return (
     <View style={styles.fontSizeContainer}>
       <View style={styles.fontSizeRow}>
-        {sizes.map(size => (
-          <TouchableOpacity
-            key={size}
-            onPress={() => setReaderFontSize(size)}
-            style={[
-              styles.fontSizeButton,
-              {
-                backgroundColor:
-                  readerFontSize === size
+        {sizeOptions.map(({ multiplier, label }) => {
+          const isSelected = Math.abs(multiplier - bookReaderFontSize) < 0.05;
+          return (
+            <TouchableOpacity
+              key={multiplier}
+              onPress={() => setBookReaderFontSize(multiplier)}
+              style={[
+                styles.fontSizeButton,
+                {
+                  backgroundColor: isSelected
                     ? themeColors.accentPrimary
                     : themeColors.surface,
-                borderColor:
-                  readerFontSize === size
+                  borderColor: isSelected
                     ? themeColors.accentPrimary
                     : themeColors.border,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                {
-                  fontSize: size * 0.7,
-                  color:
-                    readerFontSize === size
-                      ? '#FFFFFF'
-                      : themeColors.textSecondary,
-                  fontWeight: readerFontSize === size ? '600' : '400',
                 },
               ]}
             >
-              A
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  {
+                    fontSize: Number(label) * 0.7,
+                    color: isSelected ? '#FFFFFF' : themeColors.textSecondary,
+                    fontWeight: isSelected ? '600' : '400',
+                  },
+                ]}
+              >
+                A
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
       <Text
         style={[
@@ -210,7 +221,7 @@ const FontSizeSelector = ({ themeColors }: { themeColors: any }) => {
           },
         ]}
       >
-        Current: {readerFontSize}pt
+        Current: {currentSize.label}pt
       </Text>
     </View>
   );

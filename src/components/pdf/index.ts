@@ -7,4 +7,3 @@
 export { PdfViewer } from './PdfViewer';
 export { PdfViewerWithAnnotations } from './PdfViewerWithAnnotations';
 export { PdfThumbnail } from './PdfThumbnail';
-export { ZoomControls } from './ZoomControls';

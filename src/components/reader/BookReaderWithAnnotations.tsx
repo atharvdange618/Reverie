@@ -28,6 +28,7 @@ interface BookReaderWithAnnotationsProps {
   currentPage: number;
   onPageChanged?: (page: number, totalPages?: number) => void;
   onLoadComplete?: (totalPages: number) => void;
+  onLoadingChange?: (isLoading: boolean) => void;
   fontSize?: number;
   lineSpacing?: number;
   enableDarkMode?: boolean;
@@ -78,6 +79,7 @@ export const BookReaderWithAnnotations: React.FC<
   currentPage,
   onPageChanged,
   onLoadComplete,
+  onLoadingChange,
   fontSize,
   lineSpacing,
   enableDarkMode,
@@ -140,6 +142,7 @@ export const BookReaderWithAnnotations: React.FC<
         currentPage={currentPage}
         onPageChanged={onPageChanged}
         onLoadComplete={onLoadComplete}
+        onLoadingChange={onLoadingChange}
         fontSize={fontSize}
         lineSpacing={lineSpacing}
         enableDarkMode={enableDarkMode}

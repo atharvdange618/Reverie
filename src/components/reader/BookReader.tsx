@@ -17,7 +17,7 @@ import {
   Dimensions,
   Pressable,
 } from 'react-native';
-import { BookContent, TextExtractor } from '../../utils';
+import { BookContent, formatExtractedText, TextExtractor } from '../../utils';
 import { colors, fontFamilies, spacing, typography } from '../../theme';
 import { useSettingsStore } from '../../store';
 import { LoadingWithQuote } from '../common';
@@ -34,6 +34,7 @@ export interface BookReaderProps {
   currentPage?: number;
   onPageChanged?: (page: number, totalPages?: number) => void;
   onLoadComplete?: (totalPages: number) => void;
+  onLoadingChange?: (isLoading: boolean) => void;
   fontSize?: number;
   lineSpacing?: number;
   enableDarkMode?: boolean;
@@ -47,6 +48,7 @@ export const BookReader: React.FC<BookReaderProps> = memo(
     currentPage: _currentPage,
     onPageChanged: _onPageChanged,
     onLoadComplete: _onLoadComplete,
+    onLoadingChange: _onLoadingChange,
     fontSize: propFontSize,
     lineSpacing: propLineSpacing,
     enableDarkMode,
@@ -96,6 +98,7 @@ export const BookReader: React.FC<BookReaderProps> = memo(
 
     const loadBook = useCallback(async () => {
       setLoading(true);
+      _onLoadingChange?.(true);
       setError(null);
 
       try {
@@ -111,6 +114,8 @@ export const BookReader: React.FC<BookReaderProps> = memo(
           setScrollPosition(progress.scrollPosition);
           _onPageChanged?.(progress.currentPage, totalPages);
 
+          setLoading(false);
+
           setTimeout(() => {
             if (scrollViewRef.current && progress.scrollPosition > 0) {
               scrollViewRef.current.scrollTo({
@@ -119,18 +124,23 @@ export const BookReader: React.FC<BookReaderProps> = memo(
                 animated: false,
               });
             }
-          }, 100);
+            _onLoadingChange?.(false);
+          }, 500);
         } else if (_currentPage) {
           setCurrentPage(_currentPage);
           _onPageChanged?.(_currentPage, totalPages);
+          setLoading(false);
+          _onLoadingChange?.(false);
         } else {
           _onPageChanged?.(1, totalPages);
+          setLoading(false);
+          _onLoadingChange?.(false);
         }
       } catch (err) {
         console.error('[BookReader] Failed to load book:', err);
         setError(err instanceof Error ? err.message : 'Failed to load book');
-      } finally {
         setLoading(false);
+        _onLoadingChange?.(false);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filePath, bookId, bookIdStr]);
@@ -296,15 +306,6 @@ export const BookReader: React.FC<BookReaderProps> = memo(
 );
 
 BookReader.displayName = 'BookReader';
-
-const formatExtractedText = (text: string): string => {
-  return text
-    .replace(/\n{2,}/g, '\n\n')
-    .replace(/-\n/g, '')
-    .replace(/([^\n])\n([^\n])/g, '$1 $2')
-    .replace(/  +/g, ' ')
-    .trim();
-};
 
 const styles = StyleSheet.create({
   container: {
