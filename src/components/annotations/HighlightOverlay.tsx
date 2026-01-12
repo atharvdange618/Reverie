@@ -84,7 +84,6 @@ const HighlightBox: React.FC<HighlightBoxProps> = ({
   const translateY = useSharedValue(0);
   const isDragging = useSharedValue(false);
 
-  // Convert percentage to pixels
   const toPixels = useCallback(
     (percent: number, dimension: 'width' | 'height') => {
       return (percent / 100) * (dimension === 'width' ? pageWidth : pageHeight);
@@ -92,7 +91,6 @@ const HighlightBox: React.FC<HighlightBoxProps> = ({
     [pageWidth, pageHeight],
   );
 
-  // Convert pixels to percentage
   const toPercent = useCallback(
     (pixels: number, dimension: 'width' | 'height') => {
       return (pixels / (dimension === 'width' ? pageWidth : pageHeight)) * 100;
@@ -100,7 +98,6 @@ const HighlightBox: React.FC<HighlightBoxProps> = ({
     [pageWidth, pageHeight],
   );
 
-  // Handler to update position (runs on JS thread)
   const handleUpdatePosition = useCallback(
     (deltaX: number, deltaY: number) => {
       const currentX = toPixels(highlight.x, 'width');
@@ -129,7 +126,6 @@ const HighlightBox: React.FC<HighlightBoxProps> = ({
     ],
   );
 
-  // Pan gesture for dragging
   const panGesture = Gesture.Pan()
     .onStart(() => {
       'worklet';
@@ -149,7 +145,6 @@ const HighlightBox: React.FC<HighlightBoxProps> = ({
       translateX.value = withSpring(0);
       translateY.value = withSpring(0);
 
-      // Update position in database
       runOnJS(handleUpdatePosition)(finalX, finalY);
     });
 
@@ -225,14 +220,12 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
     null,
   );
 
-  // Shared values for drawing
   const startX = useSharedValue(0);
   const startY = useSharedValue(0);
   const currentX = useSharedValue(0);
   const currentY = useSharedValue(0);
   const isDrawing = useSharedValue(false);
 
-  // Convert pixels to percentage (for drawing new highlights)
   const toPercent = useCallback(
     (pixels: number, dimension: 'width' | 'height') => {
       return (pixels / (dimension === 'width' ? pageWidth : pageHeight)) * 100;
@@ -240,7 +233,6 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
     [pageWidth, pageHeight],
   );
 
-  // Handler to add highlight (runs on JS thread)
   const handleAddHighlightJS = useCallback(
     (sX: number, sY: number, cX: number, cY: number) => {
       const minX = Math.min(sX, cX);
@@ -251,7 +243,6 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
       const width = maxX - minX;
       const height = maxY - minY;
 
-      // Only create highlight if both dimensions are big enough
       const minSize = MIN_SIZE_MAP[highlightSize];
       if (width >= minSize || height >= minSize) {
         onAddHighlight(
@@ -265,7 +256,6 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
     [onAddHighlight, toPercent, highlightSize],
   );
 
-  // Create pan gesture for drawing highlights
   const panGesture = Gesture.Pan()
     .enabled(isDrawingMode)
     .onStart(event => {
@@ -290,11 +280,9 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
 
       isDrawing.value = false;
 
-      // Call JS function to add highlight
       runOnJS(handleAddHighlightJS)(sX, sY, cX, cY);
     });
 
-  // Animated style for drawing rectangle preview
   const animatedDrawingStyle = useAnimatedStyle(() => {
     const minX = Math.min(startX.value, currentX.value);
     const minY = Math.min(startY.value, currentY.value);
@@ -326,7 +314,6 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
 
   const handleDeleteHighlight = useCallback(
     (id: string) => {
-      console.log('Deleting highlight:', id);
       onDeleteHighlight(id);
       setSelectedHighlight(null);
     },
@@ -339,7 +326,6 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
         style={StyleSheet.absoluteFill}
         pointerEvents={isDrawingMode ? 'auto' : 'box-none'}
       >
-        {/* Render existing highlights */}
         {highlights.map(highlight => {
           const isSelected = selectedHighlight === highlight.id;
           return (
@@ -361,7 +347,6 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
           );
         })}
 
-        {/* Render current drawing rectangle */}
         <Animated.View style={animatedDrawingStyle} />
       </View>
     </GestureDetector>

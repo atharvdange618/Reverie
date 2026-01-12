@@ -16,9 +16,7 @@ export interface ReadingProgress {
 /**
  * Get reading progress for a book
  */
-export const getReadingProgress = (
-  bookId: string,
-): ReadingProgress | null => {
+export const getReadingProgress = (bookId: string): ReadingProgress | null => {
   const rows = executeQuery<ReadingProgress>(
     'SELECT * FROM reading_progress WHERE bookId = ?',
     [bookId],
@@ -89,7 +87,7 @@ export const clearReadingProgress = (bookId: string): void => {
 };
 
 /**
- * Get all books with reading progress (for continue reading feature)
+ * Get all books with reading progress
  */
 export const getAllReadingProgress = (): ReadingProgress[] => {
   return executeQuery<ReadingProgress>(

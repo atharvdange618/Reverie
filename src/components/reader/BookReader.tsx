@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  memo,
+} from 'react';
 import {
   View,
   ScrollView,
@@ -22,27 +29,18 @@ import {
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export interface BookReaderProps {
-  /** Absolute path to the PDF file */
   filePath: string;
-  /** Database ID of the book */
   bookId: number;
-  /** Current page number (1-indexed) */
   currentPage?: number;
-  /** Callback when page changes during scroll */
   onPageChanged?: (page: number, totalPages?: number) => void;
-  /** Callback when book loading is complete */
   onLoadComplete?: (totalPages: number) => void;
-  /** Font size multiplier (0.8 - 1.5) */
   fontSize?: number;
-  /** Line height multiplier (1.2 - 2.0) */
   lineSpacing?: number;
-  /** Whether to use dark mode */
   enableDarkMode?: boolean;
-  /** Callback to toggle UI controls visibility */
   onToggleControls?: () => void;
 }
 
-export const BookReader: React.FC<BookReaderProps> = React.memo(
+export const BookReader: React.FC<BookReaderProps> = memo(
   ({
     filePath,
     bookId,
@@ -57,7 +55,6 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
     const systemColorScheme = useColorScheme();
     const isDark = enableDarkMode ?? systemColorScheme === 'dark';
 
-    // Get settings from store
     const { bookReaderFontSize, bookReaderFontFamily, bookReaderLineSpacing } =
       useSettingsStore();
 
@@ -71,15 +68,15 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
     const scrollViewRef = useRef<ScrollView>(null);
     const bookIdStr = bookId.toString();
 
-    const fontSize = React.useMemo(
+    const fontSize = useMemo(
       () => propFontSize ?? bookReaderFontSize,
       [propFontSize, bookReaderFontSize],
     );
-    const lineSpacing = React.useMemo(
+    const lineSpacing = useMemo(
       () => propLineSpacing ?? bookReaderLineSpacing,
       [propLineSpacing, bookReaderLineSpacing],
     );
-    const fontFamily = React.useMemo(
+    const fontFamily = useMemo(
       () =>
         bookReaderFontFamily === 'inter'
           ? fontFamilies.inter.regular
@@ -87,7 +84,6 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
       [bookReaderFontFamily],
     );
 
-    // Define theme before any conditional returns
     const theme = {
       background: isDark ? '#121212' : '#FAFAFA',
       surface: isDark ? '#1E1E1E' : '#FFFFFF',
@@ -98,27 +94,23 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
       border: isDark ? '#3A3A3A' : '#E8E4DF',
     };
 
-    const loadBook = React.useCallback(async () => {
+    const loadBook = useCallback(async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // Load book content with caching
         const content = await TextExtractor.extractBook(filePath, bookId);
         setBookContent(content);
 
-        // Notify parent of total pages
         const totalPages = content.pages.length;
         _onLoadComplete?.(totalPages);
 
-        // Restore reading progress
         const progress = getReadingProgress(bookIdStr);
         if (progress && progress.readingMode === 'book') {
           setCurrentPage(progress.currentPage);
           setScrollPosition(progress.scrollPosition);
           _onPageChanged?.(progress.currentPage, totalPages);
 
-          // Restore scroll position after content loads
           setTimeout(() => {
             if (scrollViewRef.current && progress.scrollPosition > 0) {
               scrollViewRef.current.scrollTo({
@@ -147,7 +139,6 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
       loadBook();
     }, [loadBook]);
 
-    // Save progress when unmounting or scrolling
     useEffect(() => {
       return () => {
         if (bookContent) {
@@ -162,13 +153,11 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
       };
     }, [bookIdStr, currentPage, scrollPosition, bookContent]);
 
-    // Handle scroll events to track position and current page
-    const handleScroll = React.useCallback(
+    const handleScroll = useCallback(
       (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const { x } = event.nativeEvent.contentOffset;
         setScrollPosition(x);
 
-        // Calculate current page based on scroll position
         const pageIndex = Math.round(x / SCREEN_WIDTH);
         const newPage = Math.max(
           1,
@@ -229,7 +218,6 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
               style={[styles.pageWrapper, { width: SCREEN_WIDTH }]}
             >
               <View style={styles.pageInnerWrapper}>
-                {/* Centered book page block */}
                 <View
                   style={[
                     styles.bookPage,
@@ -239,14 +227,12 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
                     },
                   ]}
                 >
-                  {/* Page number at top */}
                   <Text
                     style={[styles.pageNumber, { color: theme.textSecondary }]}
                   >
                     {page.pageNumber}
                   </Text>
 
-                  {/* Main reading content - Scrollable */}
                   <ScrollView
                     style={styles.contentWrapper}
                     showsVerticalScrollIndicator={false}
@@ -256,7 +242,6 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
                       .split('\n\n')
                       .filter(para => para.trim().length > 0)
                       .map((paragraph, pIndex) => {
-                        // Detect if this is likely a chapter heading
                         const isHeading =
                           paragraph.length < 60 &&
                           (paragraph.toLowerCase().includes('chapter') ||
@@ -294,7 +279,6 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
             </Pressable>
           ))}
 
-          {/* Reading complete indicator */}
           <Pressable
             onPress={onToggleControls}
             style={[styles.endOfBook, { width: SCREEN_WIDTH }]}
@@ -313,24 +297,16 @@ export const BookReader: React.FC<BookReaderProps> = React.memo(
 
 BookReader.displayName = 'BookReader';
 
-// Helper function to format extracted text for better readability
 const formatExtractedText = (text: string): string => {
-  return (
-    text
-      // Normalize paragraph breaks (replace 2+ newlines with exactly 2)
-      .replace(/\n{2,}/g, '\n\n')
-      // Remove hyphenation at line breaks (rejoin hyphenated words)
-      .replace(/-\n/g, '')
-      // Join lines within paragraphs (single newline becomes space)
-      .replace(/([^\n])\n([^\n])/g, '$1 $2')
-      // Clean up multiple spaces
-      .replace(/  +/g, ' ')
-      .trim()
-  );
+  return text
+    .replace(/\n{2,}/g, '\n\n')
+    .replace(/-\n/g, '')
+    .replace(/([^\n])\n([^\n])/g, '$1 $2')
+    .replace(/  +/g, ' ')
+    .trim();
 };
 
 const styles = StyleSheet.create({
-  // Loading and error states
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -348,7 +324,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Main reader layout
   readerContainer: {
     flex: 1,
   },
@@ -359,7 +334,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing['3xl'],
   },
 
-  // Page structure
   pageWrapper: {
     width: SCREEN_WIDTH,
   },
@@ -392,7 +366,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
-  // Content styling
   contentWrapper: {
     flex: 1,
   },
@@ -409,7 +382,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
-  // End of book
   endOfBook: {
     justifyContent: 'center',
     alignItems: 'center',

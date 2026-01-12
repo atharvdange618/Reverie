@@ -31,17 +31,14 @@ import {
 } from '../db';
 
 interface AnnotationState {
-  // Current book annotations
   currentBookId: string | null;
   bookmarks: Bookmark[];
   highlights: Highlight[];
   freehandHighlights: FreehandHighlight[];
   emojiReactions: EmojiReaction[];
 
-  // Loading state
   isLoading: boolean;
 
-  // Annotation counts
   counts: {
     bookmarks: number;
     highlights: number;
@@ -49,15 +46,12 @@ interface AnnotationState {
     emojiReactions: number;
   };
 
-  // Actions
   loadAnnotations: (bookId: string) => void;
   clearAnnotations: () => void;
 
-  // Bookmark actions
   toggleBookmark: (page: number) => boolean;
   isBookmarked: (page: number) => boolean;
 
-  // Highlight actions
   addHighlight: (
     page: number,
     x: number,
@@ -77,7 +71,6 @@ interface AnnotationState {
   deleteHighlight: (id: string) => void;
   getPageHighlights: (page: number) => Highlight[];
 
-  // Freehand highlight actions
   addFreehandHighlight: (
     page: number,
     path: string,
@@ -87,7 +80,6 @@ interface AnnotationState {
   deleteFreehandHighlight: (id: string) => void;
   getPageFreehandHighlights: (page: number) => FreehandHighlight[];
 
-  // Emoji reaction actions
   addEmojiReaction: (
     page: number,
     x: number,
@@ -98,12 +90,10 @@ interface AnnotationState {
   deleteEmojiReaction: (id: string) => void;
   getPageEmojiReactions: (page: number) => EmojiReaction[];
 
-  // Refresh counts
   refreshCounts: () => void;
 }
 
 export const useAnnotationStore = create<AnnotationState>((set, get) => ({
-  // Initial state
   currentBookId: null,
   bookmarks: [],
   highlights: [],
@@ -117,7 +107,6 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     emojiReactions: 0,
   },
 
-  // Load all annotations for a book
   loadAnnotations: bookId => {
     set({ isLoading: true, currentBookId: bookId });
 
@@ -142,7 +131,6 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     }
   },
 
-  // Clear annotations
   clearAnnotations: () => {
     set({
       currentBookId: null,
@@ -159,7 +147,6 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     });
   },
 
-  // Bookmarks
   toggleBookmark: page => {
     const { currentBookId } = get();
     if (!currentBookId) throw new Error('No book loaded');
@@ -187,7 +174,6 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     return get().bookmarks.some(b => b.page === page);
   },
 
-  // Highlights
   addHighlight: (page, x, y, width, height, color) => {
     const { currentBookId } = get();
     if (!currentBookId) throw new Error('No book loaded');
@@ -246,7 +232,6 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     return get().highlights.filter(h => h.page === page);
   },
 
-  // Freehand highlights
   addFreehandHighlight: (page, path, color, strokeWidth) => {
     const { currentBookId } = get();
     if (!currentBookId) throw new Error('No book loaded');
@@ -286,7 +271,6 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     return get().freehandHighlights.filter(h => h.page === page);
   },
 
-  // Emoji reactions
   addEmojiReaction: (page, x, y, emoji) => {
     const { currentBookId } = get();
     if (!currentBookId) throw new Error('No book loaded');
@@ -330,7 +314,6 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     return get().emojiReactions.filter(r => r.page === page);
   },
 
-  // Refresh counts
   refreshCounts: () => {
     const { currentBookId } = get();
     if (!currentBookId) return;

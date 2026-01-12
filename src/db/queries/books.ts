@@ -102,7 +102,7 @@ export const updateBookProgress = (id: string, currentPage: number): void => {
 };
 
 /**
- * Update book total pages (called when PDF is first loaded)
+ * Update book total pages
  */
 export const updateBookTotalPages = (id: string, totalPages: number): void => {
   executeUpdate('UPDATE books SET totalPages = ? WHERE id = ?', [
@@ -123,7 +123,6 @@ export const updateBookTitle = (id: string, title: string): void => {
  */
 export const deleteBook = (id: string): void => {
   executeUpdate('DELETE FROM books WHERE id = ?', [id]);
-  // Related annotations will be deleted via CASCADE
 };
 
 /**
@@ -148,7 +147,7 @@ export const getReadingStats = (): {
 };
 
 /**
- * Mark book as completion celebrated (easter egg shown)
+ * Mark book as completion celebrated
  */
 export const markBookCompletionCelebrated = (id: string): void => {
   executeUpdate('UPDATE books SET completionCelebrated = 1 WHERE id = ?', [id]);

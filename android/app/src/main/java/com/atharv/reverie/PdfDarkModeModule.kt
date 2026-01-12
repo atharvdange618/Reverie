@@ -78,7 +78,7 @@ class PdfDarkModeModule(reactContext: ReactApplicationContext) : ReactContextBas
     private fun applyColorInversion(view: View) {
         android.util.Log.d("PdfDarkMode", "applyColorInversion to ${view.javaClass.simpleName}")
         
-        // Create color matrix for inversion
+        // Color matrix for inversion
         val colorMatrix = ColorMatrix()
         
         // Invert colors: multiply by -1 and add 255
@@ -96,7 +96,6 @@ class PdfDarkModeModule(reactContext: ReactApplicationContext) : ReactContextBas
         view.setLayerType(View.LAYER_TYPE_HARDWARE, paint)
         android.util.Log.d("PdfDarkMode", "Layer type set on main view")
         
-        // Also apply to all children if it's a ViewGroup
         if (view is ViewGroup) {
             android.util.Log.d("PdfDarkMode", "Applying to ${view.childCount} children")
             applyToAllChildren(view, paint)

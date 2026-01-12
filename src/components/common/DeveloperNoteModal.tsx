@@ -72,7 +72,6 @@ export const DeveloperNoteModal: React.FC<DeveloperNoteModalProps> = ({
             },
           ]}
         >
-          {/* Close button */}
           <TouchableOpacity
             onPress={onClose}
             style={styles.closeButton}
@@ -85,7 +84,6 @@ export const DeveloperNoteModal: React.FC<DeveloperNoteModalProps> = ({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            {/* Header with heart icon */}
             <Animated.View
               entering={FadeIn.duration(600).delay(200)}
               style={styles.headerContainer}
@@ -102,7 +100,6 @@ export const DeveloperNoteModal: React.FC<DeveloperNoteModalProps> = ({
               </Text>
             </Animated.View>
 
-            {/* Developer note message */}
             <Animated.View entering={FadeIn.duration(600).delay(400)}>
               <Text
                 style={[
@@ -115,7 +112,6 @@ export const DeveloperNoteModal: React.FC<DeveloperNoteModalProps> = ({
               </Text>
             </Animated.View>
 
-            {/* Signature */}
             <Animated.View entering={FadeIn.duration(600).delay(600)}>
               <Text
                 style={[

@@ -9,7 +9,6 @@ import type {
   NavigatorScreenParams,
 } from '@react-navigation/native';
 
-// Root Stack
 export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
@@ -19,14 +18,12 @@ export type RootStackParamList = {
   About: undefined;
 };
 
-// Main Tab Navigator
 export type MainTabParamList = {
   Home: undefined;
   Library: undefined;
   Settings: undefined;
 };
 
-// Screen Props Types
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
 
@@ -36,7 +33,6 @@ export type MainTabScreenProps<T extends keyof MainTabParamList> =
     RootStackScreenProps<keyof RootStackParamList>
   >;
 
-// Declare global for useNavigation hook
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}

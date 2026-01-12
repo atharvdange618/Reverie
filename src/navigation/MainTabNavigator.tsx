@@ -16,7 +16,6 @@ import { HomeScreen, LibraryScreen, SettingsScreen } from '../screens';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-// Tab bar icons
 const HomeIcon = ({ color, size }: { color: string; size: number }) => (
   <Home color={color} size={size} />
 );

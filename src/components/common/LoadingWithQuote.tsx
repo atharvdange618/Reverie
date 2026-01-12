@@ -34,7 +34,6 @@ export const LoadingWithQuote: React.FC<LoadingWithQuoteProps> = ({
   );
 
   useEffect(() => {
-    // Rotate quotes every 4 seconds
     const interval = setInterval(() => {
       setCurrentQuoteIndex(
         prevIndex => (prevIndex + 1) % DARK_ROMANCE_QUOTES.length,

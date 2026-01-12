@@ -17,11 +17,10 @@ export interface BookContent {
   bookId: number;
   pageCount: number;
   pages: PageText[];
-  extractedAt: number; // timestamp
+  extractedAt: number;
 }
 
 export class TextExtractor {
-  // Keep memory cache for active session (faster access)
   private static memoryCache = new Map<string, BookContent>();
 
   /**
@@ -39,17 +38,11 @@ export class TextExtractor {
     const cacheKey = `${bookId}-${filePath}`;
     const bookIdStr = bookId.toString();
 
-    // Check memory cache first (fastest)
     if (!forceRefresh && this.memoryCache.has(cacheKey)) {
-      console.log(`[TextExtractor] Using memory cache for book ${bookId}`);
       return this.memoryCache.get(cacheKey)!;
     }
 
-    // Check database cache
     if (!forceRefresh && isTextCached(bookIdStr)) {
-      console.log(
-        `[TextExtractor] Loading from database cache for book ${bookId}`,
-      );
       try {
         const cachedPages = getAllCachedPages(bookIdStr);
 
@@ -61,12 +54,8 @@ export class TextExtractor {
             extractedAt: Date.now(),
           };
 
-          // Store in memory cache for this session
           this.memoryCache.set(cacheKey, bookContent);
 
-          console.log(
-            `[TextExtractor] Loaded ${cachedPages.length} pages from cache`,
-          );
           return bookContent;
         }
       } catch (error) {
@@ -76,10 +65,6 @@ export class TextExtractor {
         );
       }
     }
-
-    // No cache or force refresh - extract from PDF
-    console.log(`[TextExtractor] Extracting text from book ${bookId}...`);
-    const startTime = Date.now();
 
     try {
       const result = await extractText(filePath);
@@ -91,18 +76,11 @@ export class TextExtractor {
         extractedAt: Date.now(),
       };
 
-      // Store in both memory and database cache
       this.memoryCache.set(cacheKey, bookContent);
 
-      // Save to database asynchronously (don't block UI)
       this.saveToDatabaseCache(bookIdStr, result.pages).catch(error => {
         console.error('[TextExtractor] Failed to cache to database:', error);
       });
-
-      const duration = Date.now() - startTime;
-      console.log(
-        `[TextExtractor] Extracted ${result.pageCount} pages in ${duration}ms`,
-      );
 
       return bookContent;
     } catch (error) {
@@ -112,18 +90,14 @@ export class TextExtractor {
   }
 
   /**
-   * Save extracted pages to database cache (async)
+   * Save extracted pages to database cache
    */
   private static async saveToDatabaseCache(
     bookId: string,
     pages: PageText[],
   ): Promise<void> {
     try {
-      console.log(
-        `[TextExtractor] Caching ${pages.length} pages to database...`,
-      );
       cacheMultiplePages(bookId, pages);
-      console.log('[TextExtractor] Successfully cached to database');
     } catch (error) {
       console.error('[TextExtractor] Database caching failed:', error);
       throw error;
@@ -144,18 +118,14 @@ export class TextExtractor {
   ): Promise<string> {
     const bookIdStr = bookId.toString();
 
-    // Check database cache first
     const cached = getCachedPageText(bookIdStr, pageNumber);
     if (cached) {
-      console.log(`[TextExtractor] Using cached page ${pageNumber}`);
       return cached;
     }
 
-    // Extract from PDF
     try {
       const text = await extractPageText(filePath, pageNumber);
 
-      // Cache for future use (async)
       cacheMultiplePages(bookIdStr, [{ pageNumber, text }]);
 
       return text;
@@ -188,7 +158,6 @@ export class TextExtractor {
    */
   static clearCache(bookId?: number): void {
     if (bookId !== undefined) {
-      // Clear memory cache
       const keysToDelete: string[] = [];
       this.memoryCache.forEach((_, key) => {
         if (key.startsWith(`${bookId}-`)) {
@@ -197,19 +166,14 @@ export class TextExtractor {
       });
       keysToDelete.forEach(key => this.memoryCache.delete(key));
 
-      // Clear database cache
       clearCachedText(bookId.toString());
-
-      console.log(`[TextExtractor] Cleared all caches for book ${bookId}`);
     } else {
-      // Clear all memory cache
       this.memoryCache.clear();
-      console.log('[TextExtractor] Cleared memory cache');
     }
   }
 
   /**
-   * Get cache size (memory only)
+   * Get cache size
    * @returns Number of cached books in memory
    */
   static getCacheSize(): number {

@@ -81,7 +81,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
   const [emojiData, setEmojiData] = useState<EmojiMartData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load emoji data from CDN
   useEffect(() => {
     fetch('https://cdn.jsdelivr.net/npm/@emoji-mart/data')
       .then(response => response.json())
@@ -95,7 +94,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
       });
   }, []);
 
-  // Get emojis by category or search
   const displayedEmojis = useMemo(() => {
     if (!emojiData) {
       return [];
@@ -105,7 +103,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
     const categories = emojiData.categories;
 
     if (searchQuery.trim()) {
-      // Search mode
       const query = searchQuery.toLowerCase();
       return Object.values(emojiMap)
         .filter(
@@ -113,11 +110,10 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
             emoji.name.toLowerCase().includes(query) ||
             emoji.keywords?.some(kw => kw.toLowerCase().includes(query)),
         )
-        .slice(0, 50) // Limit search results
+        .slice(0, 50)
         .map(emoji => emoji.skins?.[0]?.native || emoji.native || '');
     }
 
-    // Category mode
     const category = categories.find(cat => cat.id === selectedCategory);
     if (!category) {
       return [];
@@ -157,7 +153,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
           ]}
           onPress={e => e.stopPropagation()}
         >
-          {/* Header */}
           <View style={styles.header}>
             <Text
               style={[
@@ -173,7 +168,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Search bar */}
           <View
             style={[
               styles.searchContainer,
@@ -202,7 +196,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
             )}
           </View>
 
-          {/* Frequently used */}
           {!searchQuery && (
             <View style={styles.frequentSection}>
               <Text
@@ -237,7 +230,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
             </View>
           )}
 
-          {/* Category tabs */}
           {!searchQuery && (
             <ScrollView
               horizontal
@@ -279,7 +271,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
             </ScrollView>
           )}
 
-          {/* Emoji grid */}
           <FlatList
             data={displayedEmojis}
             keyExtractor={(item, index) => `${item}-${index}`}

@@ -77,14 +77,12 @@ export const BookCompletionModal: React.FC<BookCompletionModalProps> = ({
 }) => {
   const { themeColors } = useSettingsStore();
 
-  // Beating heart animation
   const heartScale = useSharedValue(0);
   const sparkle1Opacity = useSharedValue(0);
   const sparkle2Opacity = useSharedValue(0);
 
   useEffect(() => {
     if (visible) {
-      // Heart entrance and beat
       heartScale.value = withSequence(
         withTiming(1.5, { duration: 600 }),
         withTiming(1, { duration: 300 }),
@@ -98,7 +96,6 @@ export const BookCompletionModal: React.FC<BookCompletionModalProps> = ({
         ),
       );
 
-      // Sparkle animations
       sparkle1Opacity.value = withDelay(
         400,
         withRepeat(
@@ -137,7 +134,6 @@ export const BookCompletionModal: React.FC<BookCompletionModalProps> = ({
     opacity: sparkle2Opacity.value,
   }));
 
-  // Get random completion message
   const message =
     completionMessages[Math.floor(Math.random() * completionMessages.length)];
 
@@ -171,7 +167,6 @@ export const BookCompletionModal: React.FC<BookCompletionModalProps> = ({
             },
           ]}
         >
-          {/* Sparkles */}
           <Animated.View style={[styles.sparkle1, sparkle1AnimatedStyle]}>
             <Sparkles size={24} color="#FFD700" />
           </Animated.View>
@@ -179,12 +174,10 @@ export const BookCompletionModal: React.FC<BookCompletionModalProps> = ({
             <Sparkles size={20} color="#FFB6C1" />
           </Animated.View>
 
-          {/* Beating heart */}
           <Animated.View style={[styles.heartContainer, heartAnimatedStyle]}>
             <Heart size={80} color="#FFB6C1" fill="#FFB6C1" />
           </Animated.View>
 
-          {/* Book title */}
           <Text
             style={[
               typography.reading.title,
@@ -196,7 +189,6 @@ export const BookCompletionModal: React.FC<BookCompletionModalProps> = ({
             {bookTitle}
           </Text>
 
-          {/* Completion message */}
           <Text
             style={[
               typography.reading.message,
@@ -207,7 +199,6 @@ export const BookCompletionModal: React.FC<BookCompletionModalProps> = ({
             {message}
           </Text>
 
-          {/* Close button */}
           <TouchableOpacity
             onPress={onClose}
             style={[

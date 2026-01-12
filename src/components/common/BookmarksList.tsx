@@ -43,9 +43,8 @@ export const BookmarksList: React.FC<BookmarksListProps> = ({
     onClose();
   };
 
-  // Generate rare bookmark icon (10% chance)
   const getRareBookmarkIcon = (page: number): string | null => {
-    const random = (page * 7) % 100; // Deterministic based on page number
+    const random = (page * 7) % 100;
     if (random < 10) {
       const rareIcons = ['✨', '💫', '🌙', '⭐', '💝', '🦋'];
       return rareIcons[page % rareIcons.length];
@@ -144,7 +143,6 @@ export const BookmarksList: React.FC<BookmarksListProps> = ({
             },
           ]}
         >
-          {/* Header */}
           <View
             style={[styles.header, { borderBottomColor: themeColors.border }]}
           >
@@ -158,7 +156,6 @@ export const BookmarksList: React.FC<BookmarksListProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Bookmarks List */}
           {bookmarks.length === 0 ? (
             <View style={styles.emptyState}>
               <BookmarkCheck

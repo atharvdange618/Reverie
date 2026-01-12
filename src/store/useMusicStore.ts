@@ -7,10 +7,8 @@
 import { create } from 'zustand';
 import Sound from 'react-native-sound';
 
-// Enable playback in silence mode (iOS)
 Sound.setCategory('Playback');
 
-// Define ambient tracks with display info
 export const AMBIENT_TRACKS = [
   {
     id: 'ocean',
@@ -44,7 +42,6 @@ interface MusicState {
   currentTime: number;
   duration: number;
 
-  // Actions
   toggleMusic: () => void;
   setVolume: (volume: number) => void;
   nextTrack: () => void;
@@ -67,7 +64,6 @@ export const useMusicStore = create<MusicState>((set, get) => ({
   initialize: () => {
     const { currentTrackIndex, volume, sound: existingSound } = get();
 
-    // Clean up existing sound if any
     if (existingSound) {
       existingSound.stop();
       existingSound.release();
@@ -75,7 +71,6 @@ export const useMusicStore = create<MusicState>((set, get) => ({
 
     const track = AMBIENT_TRACKS[currentTrackIndex];
 
-    // Load sound from app bundle
     const sound = new Sound(track.file, Sound.MAIN_BUNDLE, error => {
       if (error) {
         console.error('Error loading sound:', error);
@@ -83,10 +78,8 @@ export const useMusicStore = create<MusicState>((set, get) => ({
         return;
       }
 
-      // Set volume and enable looping
       sound.setVolume(volume);
-      sound.setNumberOfLoops(-1); // Loop indefinitely
-
+      sound.setNumberOfLoops(-1);
       const duration = sound.getDuration();
       set({ sound, isLoaded: true, duration, currentTime: 0 });
     });
@@ -96,7 +89,6 @@ export const useMusicStore = create<MusicState>((set, get) => ({
     const { isPlaying, sound, isLoaded } = get();
 
     if (!sound || !isLoaded) {
-      // Initialize first if not loaded
       get().initialize();
       return;
     }
@@ -134,7 +126,6 @@ export const useMusicStore = create<MusicState>((set, get) => ({
   playTrack: (index: number) => {
     const { sound, isPlaying } = get();
 
-    // Stop current sound
     if (sound) {
       sound.stop();
       sound.release();
@@ -147,7 +138,6 @@ export const useMusicStore = create<MusicState>((set, get) => ({
       currentTime: 0,
     });
 
-    // Load and play new track
     const track = AMBIENT_TRACKS[index];
     const { volume } = get();
 
@@ -163,7 +153,6 @@ export const useMusicStore = create<MusicState>((set, get) => ({
       const duration = newSound.getDuration();
       set({ sound: newSound, isLoaded: true, duration });
 
-      // Auto-play if was playing before
       if (isPlaying) {
         newSound.play();
         set({ isPlaying: true });

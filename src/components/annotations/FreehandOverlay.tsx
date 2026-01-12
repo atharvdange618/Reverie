@@ -58,10 +58,8 @@ export const FreehandOverlay: React.FC<FreehandOverlayProps> = ({
   const [currentPath, setCurrentPath] = useState<SkPath | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
-  // Get hex color from color name
   const hexColor = useMemo(() => COLOR_MAP[color], [color]);
 
-  // Convert strokeWidth to actual pixel width
   const actualStrokeWidth = useMemo(() => {
     if (typeof strokeWidth === 'number') {
       return strokeWidth;
@@ -70,7 +68,6 @@ export const FreehandOverlay: React.FC<FreehandOverlayProps> = ({
     return STROKE_WIDTH_MAP[sizeKey];
   }, [strokeWidth]);
 
-  // Touch handler for drawing
   const panGesture = Gesture.Pan()
     .onStart(event => {
       if (!isActive) return;
@@ -86,22 +83,21 @@ export const FreehandOverlay: React.FC<FreehandOverlayProps> = ({
 
       const { x, y } = event;
       currentPath.lineTo(x, y);
-      runOnJS(setCurrentPath)(currentPath.copy()); // Force re-render
+      runOnJS(setCurrentPath)(currentPath.copy());
     })
     .onEnd(() => {
       if (!isActive || !currentPath) return;
 
-      // Convert path to SVG string for storage
       const pathString = currentPath.toSVGString();
 
-      // Only save if path has meaningful length
       if (pathString && pathString.length > 10) {
         runOnJS(onPathComplete)(pathString);
       }
 
       runOnJS(setCurrentPath)(null);
       runOnJS(setIsDrawing)(false);
-    }); // Convert existing paths from SVG strings back to Skia paths
+    });
+
   const renderedPaths = useMemo(() => {
     return existingPaths.map(fh => {
       const path = Skia.Path.MakeFromSVGString(fh.path);
@@ -119,7 +115,6 @@ export const FreehandOverlay: React.FC<FreehandOverlayProps> = ({
       <GestureDetector gesture={panGesture}>
         <View style={styles.canvas}>
           <Canvas style={styles.canvas}>
-            {/* Render existing paths */}
             {renderedPaths.map(item => (
               <Path
                 key={item.id}
@@ -135,7 +130,6 @@ export const FreehandOverlay: React.FC<FreehandOverlayProps> = ({
               </Path>
             ))}
 
-            {/* Render current path being drawn */}
             {isDrawing && currentPath && (
               <Path
                 path={currentPath}

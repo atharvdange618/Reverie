@@ -13,17 +13,11 @@ const CARD_GAP = 12;
 const CARD_WIDTH = (width - 40 - CARD_GAP) / 2;
 
 interface PdfThumbnailProps {
-  /** Path to the PDF file */
   source: string;
-  /** Width of the thumbnail */
   width?: number;
-  /** Height of the thumbnail */
   height?: number;
-  /** Fallback background color */
   backgroundColor?: string;
-  /** Callback when thumbnail loads */
   onLoad?: () => void;
-  /** Callback on error */
   onError?: () => void;
 }
 
@@ -51,7 +45,6 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = React.memo(
       [onError],
     );
 
-    // Format source URI
     const pdfSource = source.startsWith('file://')
       ? { uri: source, cache: true }
       : source.startsWith('/')

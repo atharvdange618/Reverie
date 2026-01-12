@@ -36,7 +36,6 @@ interface EmojiReactionOverlayProps {
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-// Animated reaction button component
 interface ReactionButtonProps {
   reaction: EmojiReaction;
   isSelected: boolean;
@@ -63,7 +62,6 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({
   const translateY = useSharedValue(0);
   const isDragging = useSharedValue(false);
 
-  // Convert percentage to pixels
   const toPixels = useCallback(
     (percent: number, dimension: 'width' | 'height') => {
       return (percent / 100) * (dimension === 'width' ? pageWidth : pageHeight);
@@ -71,7 +69,6 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({
     [pageWidth, pageHeight],
   );
 
-  // Convert pixels to percentage
   const toPercent = useCallback(
     (pixels: number, dimension: 'width' | 'height') => {
       return (pixels / (dimension === 'width' ? pageWidth : pageHeight)) * 100;
@@ -79,7 +76,6 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({
     [pageWidth, pageHeight],
   );
 
-  // Handler to update position (runs on JS thread)
   const handleUpdatePosition = useCallback(
     (newX: number, newY: number) => {
       const currentX = toPixels(reaction.x, 'width');
@@ -97,7 +93,6 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({
     [reaction.id, reaction.x, reaction.y, onUpdate, toPixels, toPercent],
   );
 
-  // Long press and drag gesture
   const panGesture = Gesture.Pan()
     .onStart(() => {
       'worklet';
@@ -117,11 +112,9 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({
       isDragging.value = false;
       scale.value = isSelected ? 1.2 : 1;
 
-      // Reset translation after updating position
       translateX.value = 0;
       translateY.value = 0;
 
-      // Update position on JS thread
       runOnJS(handleUpdatePosition)(finalX, finalY);
     });
 
@@ -192,31 +185,26 @@ export const EmojiReactionOverlay: React.FC<EmojiReactionOverlayProps> = ({
 }) => {
   const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
 
-  // Convert pixels to percentage
   const toPercent = (pixels: number, dimension: 'width' | 'height') => {
     return (pixels / (dimension === 'width' ? pageWidth : pageHeight)) * 100;
   };
 
-  // Handle tap on page to place emoji
   const handlePagePress = (event: any) => {
     if (isPlacementMode) {
       const { locationX, locationY } = event.nativeEvent;
       const x = toPercent(locationX, 'width');
       const y = toPercent(locationY, 'height');
 
-      // Show emoji picker and pass position
       onOpenEmojiPicker(x, y);
     }
   };
 
-  // Handle reaction press
   const handleReactionPress = (id: string) => {
     if (!isPlacementMode) {
       setSelectedReaction(selectedReaction === id ? null : id);
     }
   };
 
-  // Handle delete reaction
   const handleDeleteReaction = (id: string) => {
     onDeleteReaction(id);
     setSelectedReaction(null);
@@ -228,7 +216,6 @@ export const EmojiReactionOverlay: React.FC<EmojiReactionOverlayProps> = ({
       onPress={handlePagePress}
       pointerEvents={isPlacementMode ? 'auto' : 'box-none'}
     >
-      {/* Render all reactions */}
       {reactions.map(reaction => {
         const isSelected = selectedReaction === reaction.id;
         return (

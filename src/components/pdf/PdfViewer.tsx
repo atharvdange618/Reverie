@@ -15,19 +15,12 @@ import Pdf, { PdfRef } from 'react-native-pdf';
 const { width, height } = Dimensions.get('window');
 
 interface PdfViewerProps {
-  /** Path to the PDF file */
   source: string;
-  /** Current page number (1-indexed) */
   page: number;
-  /** Callback when page changes */
   onPageChange: (page: number, totalPages: number) => void;
-  /** Callback when PDF is loaded */
   onLoadComplete?: (totalPages: number) => void;
-  /** Callback on error */
   onError?: (error: any) => void;
-  /** Reading mode: paged (swipe) or scroll (continuous) */
   readingMode?: 'paged' | 'scroll';
-  /** Background color */
   backgroundColor?: string;
 }
 
@@ -46,7 +39,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = React.memo(
 
     const handleLoadComplete = useCallback(
       (numberOfPages: number) => {
-        // Navigate to saved page if not on page 1
         if (
           pdfRef.current &&
           initialPage.current > 1 &&

@@ -40,7 +40,6 @@ import { useSettingsStore, useMusicStore } from '../store';
 import { typography, spacing, borderRadius, colors } from '../theme';
 import type { ThemeMode } from '../theme/colors';
 
-// Section Header Component
 const SectionHeader = ({
   title,
   themeColors,
@@ -59,7 +58,6 @@ const SectionHeader = ({
   </Text>
 );
 
-// Settings Row Component
 const SettingsRow = ({
   icon,
   title,
@@ -104,7 +102,6 @@ const SettingsRow = ({
   </TouchableOpacity>
 );
 
-// Theme Option Button
 const ThemeButton = ({
   mode,
   label,
@@ -161,7 +158,6 @@ const ThemeButton = ({
   );
 };
 
-// Font Size Slider
 const FontSizeSelector = ({ themeColors }: { themeColors: any }) => {
   const { readerFontSize, setReaderFontSize } = useSettingsStore();
   const sizes = [14, 16, 18, 20, 22, 24];
@@ -238,12 +234,10 @@ export const SettingsScreen = () => {
 
   const { initialize, toggleMusic, setVolume, isPlaying } = useMusicStore();
 
-  // Initialize music player on mount
   useEffect(() => {
     initialize();
   }, [initialize]);
 
-  // Sync music playback with settings
   useEffect(() => {
     if (ambientMusicEnabled && !isPlaying) {
       toggleMusic();
@@ -252,7 +246,6 @@ export const SettingsScreen = () => {
     }
   }, [ambientMusicEnabled, isPlaying, toggleMusic]);
 
-  // Sync volume with settings
   useEffect(() => {
     setVolume(ambientVolume);
   }, [ambientVolume, setVolume]);
@@ -274,7 +267,6 @@ export const SettingsScreen = () => {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
           <View style={styles.headerRow}>
             <Text
@@ -294,7 +286,6 @@ export const SettingsScreen = () => {
           </Text>
         </Animated.View>
 
-        {/* Theme Section */}
         <Animated.View entering={FadeInDown.duration(400).delay(100)}>
           <SectionHeader title="APPEARANCE" themeColors={themeColors} />
           <View style={styles.themeContainer}>
@@ -325,7 +316,6 @@ export const SettingsScreen = () => {
           </View>
         </Animated.View>
 
-        {/* Reader Section */}
         <Animated.View entering={FadeInDown.duration(400).delay(200)}>
           <SectionHeader title="READER" themeColors={themeColors} />
           <View
@@ -352,7 +342,6 @@ export const SettingsScreen = () => {
           </View>
         </Animated.View>
 
-        {/* Audio Section */}
         <Animated.View entering={FadeInDown.duration(400).delay(300)}>
           <SectionHeader title="AUDIO" themeColors={themeColors} />
 
@@ -433,7 +422,6 @@ export const SettingsScreen = () => {
                 ))}
               </View>
 
-              {/* Voice Selection Button */}
               <TouchableOpacity
                 onPress={() => navigation.navigate('VoiceSelection')}
                 style={[
@@ -560,7 +548,6 @@ export const SettingsScreen = () => {
           )}
         </Animated.View>
 
-        {/* About Section */}
         <Animated.View entering={FadeInDown.duration(400).delay(400)}>
           <SectionHeader title="ABOUT" themeColors={themeColors} />
 
@@ -580,7 +567,6 @@ export const SettingsScreen = () => {
           />
         </Animated.View>
 
-        {/* Easter Egg Footer */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(500)}
           style={styles.footer}

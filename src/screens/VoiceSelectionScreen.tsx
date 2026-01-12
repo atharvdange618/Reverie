@@ -45,19 +45,16 @@ export const VoiceSelectionScreen = () => {
   const [loading, setLoading] = useState(true);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
 
-  // Load voices on mount
   useEffect(() => {
     const loadVoices = async () => {
       try {
         await Tts.getInitStatus();
         const allVoices = await Tts.voices();
 
-        // Filter to English voices that are installed
         const englishVoices = allVoices.filter(
           (v: Voice) => v.language?.startsWith('en') && !v.notInstalled,
         );
 
-        // Separate network (high quality) voices from local voices
         const networkVoices = englishVoices.filter(
           (v: Voice) =>
             v.id?.toLowerCase().includes('network') ||
@@ -72,10 +69,8 @@ export const VoiceSelectionScreen = () => {
             !v.id?.toLowerCase().includes('wavenet'),
         );
 
-        // Sort network voices first, then by quality
         const sortVoices = (voices: Voice[]) => {
           return voices.sort((a: Voice, b: Voice) => {
-            // Prioritize higher quality
             if (a.quality && b.quality) {
               return b.quality - a.quality;
             }
@@ -83,17 +78,12 @@ export const VoiceSelectionScreen = () => {
           });
         };
 
-        // Combine: network voices first, then local
         const sortedVoices = [
           ...sortVoices(networkVoices),
           ...sortVoices(localVoices),
         ];
 
         setVoices(sortedVoices);
-
-        console.log(
-          `[VoiceSelection] Found ${networkVoices.length} network voices, ${localVoices.length} local voices`,
-        );
       } catch (error) {
         console.error('[VoiceSelection] Error loading voices:', error);
       } finally {
@@ -103,28 +93,22 @@ export const VoiceSelectionScreen = () => {
 
     loadVoices();
 
-    // Stop TTS when leaving screen
     return () => {
       Tts.stop();
     };
   }, []);
 
-  // Preview a voice
   const handlePreview = useCallback(async (voice: Voice) => {
     try {
-      // Stop any current preview
       Tts.stop();
 
       setPreviewingId(voice.id);
 
-      // Set this voice temporarily for preview
       await Tts.setDefaultVoice(voice.id);
-      Tts.setDefaultRate(0.5); // Normal speed
+      Tts.setDefaultRate(0.5);
 
-      // Speak preview text
       Tts.speak(PREVIEW_TEXT);
 
-      // Clear previewing state after a delay
       setTimeout(() => {
         setPreviewingId(null);
       }, 5000);
@@ -134,18 +118,15 @@ export const VoiceSelectionScreen = () => {
     }
   }, []);
 
-  // Select a voice
   const handleSelect = useCallback(
     async (voice: Voice) => {
       try {
         Tts.stop();
         await setVoice(voice.id);
 
-        // Show confirmation by previewing
         await Tts.setDefaultVoice(voice.id);
         Tts.speak('Voice selected!');
 
-        // Go back after short delay
         setTimeout(() => {
           navigation.goBack();
         }, 1500);
@@ -160,13 +141,11 @@ export const VoiceSelectionScreen = () => {
     const isSelected = item.id === selectedVoiceId;
     const isPreviewing = item.id === previewingId;
 
-    // Check if this is a high-quality network voice
     const isNetworkVoice =
       item.id?.toLowerCase().includes('network') ||
       item.id?.toLowerCase().includes('neural') ||
       item.id?.toLowerCase().includes('wavenet');
 
-    // Extract readable name from voice ID
     const displayName =
       item.name || item.id.split('-').slice(-1)[0] || 'Unknown';
     const languageLabel = item.language?.replace('_', '-') || 'en';
@@ -238,7 +217,6 @@ export const VoiceSelectionScreen = () => {
           </View>
 
           <View style={styles.voiceActions}>
-            {/* Preview button */}
             <TouchableOpacity
               style={[
                 styles.previewButton,
@@ -257,7 +235,6 @@ export const VoiceSelectionScreen = () => {
               />
             </TouchableOpacity>
 
-            {/* Select button */}
             <TouchableOpacity
               style={[
                 styles.selectButton,
@@ -294,7 +271,6 @@ export const VoiceSelectionScreen = () => {
       style={[styles.container, { backgroundColor: themeColors.background }]}
       edges={['top']}
     >
-      {/* Header */}
       <View
         style={[
           styles.header,
@@ -319,7 +295,6 @@ export const VoiceSelectionScreen = () => {
         <View style={styles.headerSpacer} />
       </View>
 
-      {/* Instructions */}
       <View
         style={[styles.instructions, { backgroundColor: themeColors.surface }]}
       >
@@ -334,7 +309,6 @@ export const VoiceSelectionScreen = () => {
         </Text>
       </View>
 
-      {/* Voice List */}
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColors.accentPrimary} />

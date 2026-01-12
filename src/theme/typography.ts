@@ -7,7 +7,6 @@
 
 import { TextStyle } from 'react-native';
 
-// Font family names (as registered in native)
 export const fontFamilies = {
   // Literata - Reading font
   literata: {
@@ -25,7 +24,6 @@ export const fontFamilies = {
   },
 } as const;
 
-// Font sizes
 export const fontSizes = {
   xs: 10,
   sm: 12,
@@ -39,7 +37,6 @@ export const fontSizes = {
   '5xl': 48,
 } as const;
 
-// Line heights
 export const lineHeights = {
   tight: 1.2,
   normal: 1.5,
@@ -47,7 +44,6 @@ export const lineHeights = {
   loose: 2,
 } as const;
 
-// Letter spacing
 export const letterSpacing = {
   tight: -0.5,
   normal: 0,
@@ -55,9 +51,7 @@ export const letterSpacing = {
   wider: 1,
 } as const;
 
-// Pre-defined text styles
 export const typography = {
-  // UI Typography (Inter)
   ui: {
     h1: {
       fontFamily: fontFamilies.inter.bold,
@@ -115,7 +109,6 @@ export const typography = {
     } as TextStyle,
   },
 
-  // Reading Typography (Literata)
   reading: {
     quote: {
       fontFamily: fontFamilies.literata.italic,

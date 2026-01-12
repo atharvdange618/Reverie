@@ -46,7 +46,6 @@ export const Dialog: React.FC<DialogProps> = ({
   const { themeColors } = useSettingsStore();
 
   const handleBackdropPress = () => {
-    // Only dismiss if there's a cancel button
     const hasCancelButton = buttons.some(btn => btn.style === 'cancel');
     if (hasCancelButton && onDismiss) {
       onDismiss();
@@ -65,7 +64,7 @@ export const Dialog: React.FC<DialogProps> = ({
   const getButtonColor = (style?: string) => {
     switch (style) {
       case 'destructive':
-        return '#EF4444'; // Red
+        return '#EF4444';
       case 'cancel':
         return themeColors.textSecondary;
       default:
@@ -104,7 +103,6 @@ export const Dialog: React.FC<DialogProps> = ({
                 shadows.lg,
               ]}
             >
-              {/* Title */}
               <Text
                 style={[
                   typography.ui.h3,
@@ -114,7 +112,6 @@ export const Dialog: React.FC<DialogProps> = ({
                 {title}
               </Text>
 
-              {/* Message */}
               <Text
                 style={[
                   typography.ui.body,
@@ -128,7 +125,6 @@ export const Dialog: React.FC<DialogProps> = ({
                 {message}
               </Text>
 
-              {/* Buttons */}
               <View style={styles.buttonContainer}>
                 {buttons.map((button, index) => (
                   <TouchableOpacity

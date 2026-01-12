@@ -23,7 +23,6 @@ import {
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface BookReaderWithAnnotationsProps {
-  // BookReader props
   filePath: string;
   bookId: string;
   currentPage: number;
@@ -34,13 +33,11 @@ interface BookReaderWithAnnotationsProps {
   enableDarkMode?: boolean;
   onToggleControls?: () => void;
 
-  // Annotation props
   activeTool: 'none' | 'highlight' | 'freehand' | 'emoji';
   themeColors: any;
   highlightColor: HighlightColor;
   highlightSize: 'small' | 'medium' | 'large';
 
-  // Annotation callbacks
   onAddHighlight: (
     page: number,
     x: number,
@@ -68,7 +65,6 @@ interface BookReaderWithAnnotationsProps {
   onUpdateEmoji: (id: string, x: number, y: number) => void;
   onDeleteEmoji: (id: string) => void;
 
-  // Current page annotations
   pageHighlights: Highlight[];
   pageFreehand: FreehandHighlight[];
   pageEmojis: EmojiReaction[];
@@ -108,7 +104,6 @@ export const BookReaderWithAnnotations: React.FC<
     y: number;
   } | null>(null);
 
-  // Handle adding a highlight
   const handleAddHighlight = useCallback(
     (x: number, y: number, w: number, h: number) => {
       onAddHighlight(currentPage, x, y, w, h, highlightColor);
@@ -116,13 +111,11 @@ export const BookReaderWithAnnotations: React.FC<
     [currentPage, highlightColor, onAddHighlight],
   );
 
-  // Handle opening emoji picker
   const handleOpenEmojiPicker = useCallback((x: number, y: number) => {
     setPendingEmojiPosition({ x, y });
     setShowEmojiPicker(true);
   }, []);
 
-  // Handle selecting an emoji
   const handleSelectEmoji = useCallback(
     (emoji: string) => {
       if (pendingEmojiPosition) {
@@ -141,7 +134,6 @@ export const BookReaderWithAnnotations: React.FC<
 
   return (
     <View style={styles.container}>
-      {/* Book Reader */}
       <BookReader
         filePath={filePath}
         bookId={parseInt(bookId, 10)}
@@ -154,12 +146,10 @@ export const BookReaderWithAnnotations: React.FC<
         onToggleControls={onToggleControls}
       />
 
-      {/* Annotation Overlays - Positioned for current page only */}
       <View
         style={StyleSheet.absoluteFill}
         pointerEvents={activeTool !== 'none' ? 'auto' : 'box-none'}
       >
-        {/* Highlight Overlay */}
         {(activeTool === 'highlight' || pageHighlights.length > 0) && (
           <HighlightOverlay
             highlights={pageHighlights}
@@ -175,7 +165,6 @@ export const BookReaderWithAnnotations: React.FC<
           />
         )}
 
-        {/* Freehand Overlay */}
         {(activeTool === 'freehand' || pageFreehand.length > 0) && (
           <FreehandOverlay
             isActive={activeTool === 'freehand'}
@@ -206,7 +195,6 @@ export const BookReaderWithAnnotations: React.FC<
           />
         )}
 
-        {/* Emoji Reaction Overlay */}
         {(activeTool === 'emoji' || pageEmojis.length > 0) && (
           <EmojiReactionOverlay
             reactions={pageEmojis}
@@ -224,7 +212,6 @@ export const BookReaderWithAnnotations: React.FC<
         )}
       </View>
 
-      {/* Emoji Picker Modal */}
       <EmojiPicker
         visible={showEmojiPicker}
         onSelectEmoji={handleSelectEmoji}

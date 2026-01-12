@@ -33,14 +33,12 @@ interface PdfViewerWithAnnotationsProps {
   readingMode?: 'paged' | 'scroll';
   backgroundColor?: string;
 
-  // Annotation props
   activeTool: AnnotationTool;
   bookId: string;
   themeColors: any;
   highlightColor: HighlightColor;
   highlightSize: 'small' | 'medium' | 'large';
 
-  // Annotation callbacks
   onAddHighlight: (
     page: number,
     x: number,
@@ -68,7 +66,6 @@ interface PdfViewerWithAnnotationsProps {
   onUpdateEmoji: (id: string, x: number, y: number) => void;
   onDeleteEmoji: (id: string) => void;
 
-  // Current page annotations
   pageHighlights: Highlight[];
   pageFreehand: FreehandHighlight[];
   pageEmojis: EmojiReaction[];
@@ -107,7 +104,6 @@ export const PdfViewerWithAnnotations: React.FC<
     y: number;
   } | null>(null);
 
-  // Handle adding a highlight
   const handleAddHighlight = useCallback(
     (x: number, y: number, w: number, h: number) => {
       onAddHighlight(page, x, y, w, h, highlightColor);
@@ -115,13 +111,11 @@ export const PdfViewerWithAnnotations: React.FC<
     [page, highlightColor, onAddHighlight],
   );
 
-  // Handle opening emoji picker
   const handleOpenEmojiPicker = useCallback((x: number, y: number) => {
     setPendingEmojiPosition({ x, y });
     setShowEmojiPicker(true);
   }, []);
 
-  // Handle selecting an emoji
   const handleSelectEmoji = useCallback(
     (emoji: string) => {
       if (pendingEmojiPosition) {
@@ -135,7 +129,6 @@ export const PdfViewerWithAnnotations: React.FC<
 
   return (
     <View style={styles.container}>
-      {/* PDF Viewer */}
       <PdfViewer
         source={source}
         page={page}
@@ -146,12 +139,10 @@ export const PdfViewerWithAnnotations: React.FC<
         backgroundColor={backgroundColor}
       />
 
-      {/* Annotation Overlays */}
       <View
         style={StyleSheet.absoluteFill}
         pointerEvents={activeTool !== 'none' ? 'auto' : 'box-none'}
       >
-        {/* Highlight Overlay */}
         {(activeTool === 'highlight' || pageHighlights.length > 0) && (
           <HighlightOverlay
             highlights={pageHighlights}
@@ -166,7 +157,6 @@ export const PdfViewerWithAnnotations: React.FC<
             themeColors={themeColors}
           />
         )}
-        s{/* Freehand Overlay */}
         {(activeTool === 'freehand' || pageFreehand.length > 0) && (
           <FreehandOverlay
             isActive={activeTool === 'freehand'}
@@ -196,7 +186,6 @@ export const PdfViewerWithAnnotations: React.FC<
             onSelectPath={() => {}}
           />
         )}
-        {/* Emoji Reaction Overlay */}
         {(activeTool === 'emoji' || pageEmojis.length > 0) && (
           <EmojiReactionOverlay
             reactions={pageEmojis}
@@ -212,7 +201,6 @@ export const PdfViewerWithAnnotations: React.FC<
         )}
       </View>
 
-      {/* Emoji Picker Modal */}
       <EmojiPicker
         visible={showEmojiPicker}
         onSelectEmoji={handleSelectEmoji}

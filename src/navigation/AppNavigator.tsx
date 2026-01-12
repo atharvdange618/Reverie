@@ -22,7 +22,6 @@ import { FloatingMusicPlayer } from '../components/audio';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Splash Screen
 const SplashScreen = () => {
   const { themeColors } = useSettingsStore();
 
@@ -59,14 +58,11 @@ export const AppNavigator = () => {
   useEffect(() => {
     const initializeApp = () => {
       try {
-        // Initialize database (sync)
         getDatabase();
 
-        // Initialize stores (sync)
         initSettings();
         initBooks();
 
-        // Small delay for splash effect
         setTimeout(() => setIsReady(true), 1000);
       } catch (error) {
         console.error('Failed to initialize app:', error);
@@ -132,7 +128,6 @@ export const AppNavigator = () => {
 };
 
 const styles = StyleSheet.create({
-  // Splash
   splash: {
     flex: 1,
     justifyContent: 'center',

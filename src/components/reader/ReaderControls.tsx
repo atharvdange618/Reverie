@@ -52,12 +52,9 @@ export const ReaderControls: React.FC<ReaderControlsProps> = ({
     overlay: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0.5)',
   };
 
-  // Font size percentage (0.8 = 80%, 1.5 = 150%)
   const fontSizePercent = Math.round(bookReaderFontSize * 100);
-  // Line spacing percentage (1.2 = 120%, 2.0 = 200%)
   const lineSpacingPercent = Math.round(bookReaderLineSpacing * 100);
 
-  // Safeguard: ensure totalPages is valid
   const validTotalPages = Math.max(1, totalPages || 1);
   const validCurrentPage = Math.max(1, Math.min(currentPage, validTotalPages));
 
@@ -76,7 +73,6 @@ export const ReaderControls: React.FC<ReaderControlsProps> = ({
           style={[styles.panel, { backgroundColor: theme.background }]}
           onPress={e => e.stopPropagation()}
         >
-          {/* Header with tabs */}
           <View style={styles.header}>
             <Text style={[styles.title, { color: theme.text }]}>
               Reading Controls
@@ -133,11 +129,9 @@ export const ReaderControls: React.FC<ReaderControlsProps> = ({
             </View>
           </View>
 
-          {/* Content */}
           <View style={styles.content}>
             {activeTab === 'typography' ? (
               <View style={styles.section}>
-                {/* Font Size */}
                 <View style={styles.control}>
                   <View style={styles.controlHeader}>
                     <Text style={[styles.label, { color: theme.text }]}>
@@ -179,7 +173,6 @@ export const ReaderControls: React.FC<ReaderControlsProps> = ({
                   </View>
                 </View>
 
-                {/* Line Spacing */}
                 <View style={styles.control}>
                   <View style={styles.controlHeader}>
                     <Text style={[styles.label, { color: theme.text }]}>
@@ -220,7 +213,6 @@ export const ReaderControls: React.FC<ReaderControlsProps> = ({
                   </View>
                 </View>
 
-                {/* Font Family */}
                 <View style={styles.control}>
                   <Text style={[styles.label, { color: theme.text }]}>
                     Font Family
@@ -284,7 +276,6 @@ export const ReaderControls: React.FC<ReaderControlsProps> = ({
               </View>
             ) : (
               <View style={styles.section}>
-                {/* Page Navigation */}
                 <View style={styles.control}>
                   <Text style={[styles.label, { color: theme.text }]}>
                     Jump to Page
@@ -327,7 +318,6 @@ export const ReaderControls: React.FC<ReaderControlsProps> = ({
                   </View>
                 </View>
 
-                {/* Quick Actions */}
                 <View style={styles.quickActions}>
                   <Pressable
                     style={[
@@ -369,7 +359,6 @@ export const ReaderControls: React.FC<ReaderControlsProps> = ({
             )}
           </View>
 
-          {/* Close button */}
           <Pressable
             style={[styles.closeButton, { backgroundColor: theme.surface }]}
             onPress={onClose}

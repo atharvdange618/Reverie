@@ -70,10 +70,8 @@ import {
 type ReaderRouteProp = RouteProp<RootStackParamList, 'Reader'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-// Annotation tool types
 type AnnotationTool = 'none' | 'highlight' | 'freehand' | 'emoji';
 
-// Tool button component
 const ToolButton = ({
   icon,
   isActive,
@@ -131,10 +129,8 @@ export const ReaderScreen = () => {
 
   const { bookId } = route.params;
 
-  // TTS store
   const { initialize: initializeTts, speakPage, stop: stopTts } = useTtsStore();
 
-  // State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [activeTool, setActiveTool] = useState<AnnotationTool>('none');
@@ -148,7 +144,7 @@ export const ReaderScreen = () => {
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isTtsMode, setIsTtsMode] = useState(false);
   const [showBookmarksList, setShowBookmarksList] = useState(false);
-  const [pdfKey, setPdfKey] = useState(0); // Force PDF remount on navigation
+  const [pdfKey, setPdfKey] = useState(0);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [showPage69Toast, setShowPage69Toast] = useState(false);
   const [showDeveloperNote, setShowDeveloperNote] = useState(false);
@@ -157,12 +153,10 @@ export const ReaderScreen = () => {
     message: '',
   });
 
-  // Initialize TTS
   useEffect(() => {
     initializeTts();
   }, [initializeTts]);
 
-  // Load book and annotations
   useEffect(() => {
     const book = loadBook(bookId);
     if (book) {
@@ -180,7 +174,6 @@ export const ReaderScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookId]);
 
-  // Handle page change
   const handlePageChange = useCallback(
     (page: number, total?: number) => {
       setCurrentPage(page);
@@ -192,21 +185,16 @@ export const ReaderScreen = () => {
 
       saveReadingProgress(bookId, page, 0, updatedTotal, 'pdf');
 
-      // Easter egg: Page 69 surprise 😏
       if (page === 69) {
         setShowPage69Toast(true);
-        // Hide toast after 4 seconds
         setTimeout(() => {
           setShowPage69Toast(false);
         }, 4000);
       }
 
-      // Check if book is completed (reached last page)
       if (page === updatedTotal && updatedTotal > 0) {
-        // Check if we haven't shown celebration yet
         const alreadyCelebrated = isBookCompletionCelebrated(bookId);
         if (!alreadyCelebrated) {
-          // Show completion modal after a short delay
           setTimeout(() => {
             setShowCompletionModal(true);
             markBookCompletionCelebrated(bookId);
@@ -214,10 +202,8 @@ export const ReaderScreen = () => {
         }
       }
 
-      // If in TTS mode, stop current speech and start reading new page
       if (isTtsMode && currentBook?.filePath) {
         stopTts();
-        // Small delay to ensure stop completes
         setTimeout(() => {
           speakPage(currentBook.filePath, page);
         }, 100);
@@ -234,12 +220,10 @@ export const ReaderScreen = () => {
     ],
   );
 
-  // Rare bookmark icon - 5-10% chance for special icons
   const getRareBookmarkIcon = useMemo(() => {
     if (!isBookmarked(currentPage)) return null;
 
     const random = Math.random();
-    // 10% chance for rare icons
     if (random < 0.1) {
       const rareIcons = ['✨', '💫', '🌙', '⭐', '💝', '🦋'];
       return rareIcons[Math.floor(Math.random() * rareIcons.length)];
@@ -247,12 +231,10 @@ export const ReaderScreen = () => {
     return null;
   }, [currentPage, isBookmarked]);
 
-  // Handle bookmark toggle
   const handleBookmark = useCallback(() => {
     toggleBookmark(currentPage);
   }, [currentPage, toggleBookmark]);
 
-  // Handle tool selection
   const handleToolSelect = useCallback(
     (tool: AnnotationTool) => {
       setActiveTool(activeTool === tool ? 'none' : tool);
@@ -260,7 +242,6 @@ export const ReaderScreen = () => {
     [activeTool],
   );
 
-  // Handle long-press on annotation tools (easter egg)
   const handleAnnotationLongPress = useCallback((tool: string) => {
     const notes: Record<string, { title: string; message: string }> = {
       highlight: {
@@ -304,7 +285,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
     }
   }, []);
 
-  // Handle PDF load complete
   const handleLoadComplete = useCallback(
     (total: number) => {
       setTotalPages(total);
@@ -319,27 +299,23 @@ Pick a voice that feels right. One that makes the story come alive the way you l
     [currentBook, bookId, updateTotalPages],
   );
 
-  // Handle PDF error
   const handlePdfError = useCallback((error: any) => {
     setPdfError(error?.message || 'Unknown error loading PDF');
     setIsLoading(false);
   }, []);
 
-  // Go back
   const handleBack = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
 
-  // Toggle controls visibility
   const handleToggleControls = useCallback(() => {
     setControlsVisible(prev => !prev);
   }, []);
 
-  // Handle bookmark navigation
   const handleNavigateToBookmark = useCallback(
     (page: number) => {
       setCurrentPage(page);
-      setPdfKey(prev => prev + 1); // Force PDF viewer remount
+      setPdfKey(prev => prev + 1);
       updateProgress(bookId, page);
       saveReadingProgress(
         bookId,
@@ -349,7 +325,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
         theme === 'dark' ? 'book' : 'pdf',
       );
 
-      // If in TTS mode, stop and speak new page
       if (isTtsMode && currentBook?.filePath) {
         stopTts();
         setTimeout(() => {
@@ -369,14 +344,12 @@ Pick a voice that feels right. One that makes the story come alive the way you l
     ],
   );
 
-  // TTS mode handlers
   const handleActivateTts = useCallback(() => {
     if (!currentBook?.filePath) return;
 
     setIsTtsMode(true);
-    setActiveTool('none'); // Deactivate any active annotation tool
+    setActiveTool('none');
 
-    // Start speaking the current page
     speakPage(currentBook.filePath, currentPage);
   }, [currentBook, currentPage, speakPage]);
 
@@ -385,7 +358,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
     stopTts();
   }, [stopTts]);
 
-  // Annotation handlers
   const handleAddHighlight = useCallback(
     (
       page: number,
@@ -402,9 +374,7 @@ Pick a voice that feels right. One that makes the story come alive the way you l
 
   const handleDeleteHighlight = useCallback(
     (id: string) => {
-      console.log('ReaderScreen: Deleting highlight with ID:', id);
       deleteHighlight(id);
-      console.log('ReaderScreen: Highlight deleted');
     },
     [deleteHighlight],
   );
@@ -456,11 +426,9 @@ Pick a voice that feels right. One that makes the story come alive the way you l
     [deleteEmojiReaction],
   );
 
-  // Calculate progress
   const progress =
     totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0;
 
-  // Get annotations for current page
   const pageHighlights = useMemo(
     () => highlights.filter(h => h.page === currentPage),
     [highlights, currentPage],
@@ -538,7 +506,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
     >
       <StatusBar hidden={!controlsVisible} />
 
-      {/* Top Bar - Toggleable */}
       {controlsVisible && (
         <Animated.View
           entering={FadeIn.duration(200)}
@@ -603,7 +570,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
         </Animated.View>
       )}
 
-      {/* PDF Viewer */}
       <View style={styles.readerArea}>
         {pdfError ? (
           <View
@@ -687,7 +653,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
         )}
       </View>
 
-      {/* Bottom Toolbar - Toggleable (hidden when TTS mode is active) */}
       {controlsVisible && !isTtsMode && (
         <Animated.View
           entering={FadeIn.duration(200)}
@@ -700,7 +665,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
             },
           ]}
         >
-          {/* Progress indicator */}
           <View style={styles.progressContainer}>
             <View
               style={[
@@ -728,7 +692,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
             </Text>
           </View>
 
-          {/* Annotation Tools */}
           <View style={styles.toolsRow}>
             <ToolButton
               icon={
@@ -794,12 +757,10 @@ Pick a voice that feels right. One that makes the story come alive the way you l
         </Animated.View>
       )}
 
-      {/* TTS Toolbar - Replaces bottom toolbar when TTS mode is active */}
       {controlsVisible && isTtsMode && (
         <TtsToolbar themeColors={themeColors} onClose={handleDeactivateTts} />
       )}
 
-      {/* Active Tool Indicator */}
       {activeTool !== 'none' && (
         <Animated.View
           entering={FadeIn.duration(200)}
@@ -833,7 +794,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
         </Animated.View>
       )}
 
-      {/* Highlight Options - Color & Size Picker */}
       {activeTool === 'highlight' && (
         <Animated.View
           entering={FadeIn.duration(200)}
@@ -847,7 +807,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
             shadows.md,
           ]}
         >
-          {/* Color Picker */}
           <View style={styles.optionsSection}>
             <Text
               style={[
@@ -882,7 +841,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
             </View>
           </View>
 
-          {/* Size Picker */}
           <View style={styles.optionsSection}>
             <Text
               style={[
@@ -924,7 +882,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
         </Animated.View>
       )}
 
-      {/* Freehand Options - Color & Size Picker */}
       {activeTool === 'freehand' && (
         <Animated.View
           entering={FadeIn.duration(200)}
@@ -938,7 +895,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
             shadows.md,
           ]}
         >
-          {/* Color Picker */}
           <View style={styles.optionsSection}>
             <Text
               style={[
@@ -973,7 +929,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
             </View>
           </View>
 
-          {/* Size Picker */}
           <View style={styles.optionsSection}>
             <Text
               style={[
@@ -1015,7 +970,6 @@ Pick a voice that feels right. One that makes the story come alive the way you l
         </Animated.View>
       )}
 
-      {/* Bookmarks List Modal */}
       <BookmarksList
         visible={showBookmarksList}
         bookmarks={bookmarks}
@@ -1025,17 +979,14 @@ Pick a voice that feels right. One that makes the story come alive the way you l
         themeColors={themeColors}
       />
 
-      {/* Page 69 Easter Egg Toast */}
       <Page69Toast visible={showPage69Toast} />
 
-      {/* Book Completion Modal (Easter Egg) */}
       <BookCompletionModal
         visible={showCompletionModal}
         bookTitle={currentBook?.title || 'Book'}
         onClose={() => setShowCompletionModal(false)}
       />
 
-      {/* Developer Note Modal (Easter Egg) */}
       <DeveloperNoteModal
         visible={showDeveloperNote}
         title={developerNoteContent.title}

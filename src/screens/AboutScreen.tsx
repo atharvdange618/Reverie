@@ -29,7 +29,6 @@ export const AboutScreen = () => {
       style={[styles.container, { backgroundColor: themeColors.background }]}
       edges={['top']}
     >
-      {/* Header */}
       <Animated.View
         entering={FadeIn.duration(400)}
         style={[styles.header, { borderBottomColor: themeColors.border }]}
@@ -50,7 +49,6 @@ export const AboutScreen = () => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* App Icon Section */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(100)}
           style={styles.iconContainer}
@@ -84,7 +82,6 @@ export const AboutScreen = () => {
           </Text>
         </Animated.View>
 
-        {/* Main Message */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(200)}
           style={[
@@ -204,7 +201,6 @@ export const AboutScreen = () => {
           </Text>
         </Animated.View>
 
-        {/* Features Section */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(300)}
           style={[
@@ -273,7 +269,6 @@ export const AboutScreen = () => {
           </View>
         </Animated.View>
 
-        {/* Footer Quote */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(400)}
           style={styles.footer}

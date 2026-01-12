@@ -33,7 +33,6 @@ export const TtsToolbar: React.FC<TtsToolbarProps> = ({
   const { isSpeaking, isPaused, speedIndex, cycleSpeed, pause, resume, stop } =
     useTtsStore();
 
-  // Determine if we're actively playing audio
   const isActive = isSpeaking || isPaused;
 
   const handlePlayPause = () => {
@@ -42,7 +41,6 @@ export const TtsToolbar: React.FC<TtsToolbarProps> = ({
     } else if (isPaused) {
       resume();
     }
-    // If not speaking and not paused, the parent component should trigger speakPage
   };
 
   const handleClose = () => {
@@ -52,7 +50,6 @@ export const TtsToolbar: React.FC<TtsToolbarProps> = ({
 
   const currentSpeedLabel = TTS_SPEEDS[speedIndex].label;
 
-  // Status text
   const getStatusText = () => {
     if (isSpeaking) return 'Speaking...';
     if (isPaused) return 'Paused';
@@ -71,7 +68,6 @@ export const TtsToolbar: React.FC<TtsToolbarProps> = ({
         },
       ]}
     >
-      {/* TTS Label */}
       <View style={styles.labelContainer}>
         <View
           style={[
@@ -88,9 +84,7 @@ export const TtsToolbar: React.FC<TtsToolbarProps> = ({
         </Text>
       </View>
 
-      {/* Controls Row */}
       <View style={styles.controlsRow}>
-        {/* Speed Button */}
         <TouchableOpacity
           onPress={cycleSpeed}
           style={[
@@ -107,7 +101,6 @@ export const TtsToolbar: React.FC<TtsToolbarProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {/* Play/Pause Button */}
         <TouchableOpacity
           onPress={handlePlayPause}
           style={[
@@ -123,7 +116,6 @@ export const TtsToolbar: React.FC<TtsToolbarProps> = ({
           )}
         </TouchableOpacity>
 
-        {/* Close Button */}
         <TouchableOpacity
           onPress={handleClose}
           style={[

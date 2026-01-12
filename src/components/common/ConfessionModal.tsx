@@ -43,7 +43,6 @@ export const ConfessionModal: React.FC<ConfessionModalProps> = ({
 }) => {
   const { themeColors } = useSettingsStore();
 
-  // Beating heart animation
   const heartScale = useSharedValue(1);
 
   useEffect(() => {
@@ -107,7 +106,6 @@ This is yours. Made with more love than I know how to put into words.
             },
           ]}
         >
-          {/* Close button */}
           <TouchableOpacity
             onPress={onClose}
             style={styles.closeButton}
@@ -120,12 +118,10 @@ This is yours. Made with more love than I know how to put into words.
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            {/* Beating heart */}
             <Animated.View style={[styles.heartContainer, heartAnimatedStyle]}>
               <Heart size={48} color="#FFB6C1" fill="#FFB6C1" />
             </Animated.View>
 
-            {/* Confession message */}
             <Text
               style={[
                 typography.reading.message,

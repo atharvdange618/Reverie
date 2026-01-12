@@ -8,12 +8,9 @@ import { open, QuickSQLiteConnection } from 'react-native-quick-sqlite';
 import { runMigrations } from './migrations';
 
 const DATABASE_NAME = 'reverie.db';
-const DATABASE_VERSION = 1; // For future migrations
+// const DATABASE_VERSION = 1;
 
 let database: QuickSQLiteConnection | null = null;
-
-// Log database version for debugging
-console.log(`Reverie DB v${DATABASE_VERSION}`);
 
 /**
  * Get database instance (singleton)
@@ -26,14 +23,11 @@ export const getDatabase = (): QuickSQLiteConnection => {
   database = open({ name: DATABASE_NAME });
   initializeTables(database);
 
-  // Run migrations to clean up data
   runMigrations();
 
-  // Create unique index AFTER migration to prevent duplicates
   database.execute(`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_bookmarks_unique ON bookmarks(bookId, page);
   `);
-  console.log('✅ Unique index for bookmarks created');
 
   return database;
 };
@@ -66,7 +60,7 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
     );
   `);
 
-  // Highlights table (rectangle-based)
+  // Highlights table
   db.execute(`
     CREATE TABLE IF NOT EXISTS highlights (
       id TEXT PRIMARY KEY,
@@ -82,7 +76,7 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
     );
   `);
 
-  // Freehand highlights table (for marker-style annotations)
+  // Freehand highlights table
   db.execute(`
     CREATE TABLE IF NOT EXISTS freehand_highlights (
       id TEXT PRIMARY KEY,
@@ -110,7 +104,7 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
     );
   `);
 
-  // Settings table (key-value store)
+  // Settings table
   db.execute(`
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
@@ -118,7 +112,7 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
     );
   `);
 
-  // Audio tracks table (for user-added tracks)
+  // Audio tracks table
   db.execute(`
     CREATE TABLE IF NOT EXISTS audio_tracks (
       id TEXT PRIMARY KEY,
@@ -130,7 +124,7 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
     );
   `);
 
-  // Extracted text cache table (for BookReader)
+  // Extracted text cache table
   db.execute(`
     CREATE TABLE IF NOT EXISTS extracted_text (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -143,7 +137,7 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
     );
   `);
 
-  // Reading progress table (for both PDF and Book modes)
+  // Reading progress table
   db.execute(`
     CREATE TABLE IF NOT EXISTS reading_progress (
       bookId TEXT PRIMARY KEY,
@@ -156,7 +150,6 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
     );
   `);
 
-  // Create indexes for better query performance
   db.execute(`
     CREATE INDEX IF NOT EXISTS idx_bookmarks_bookId ON bookmarks(bookId);
   `);
@@ -179,8 +172,6 @@ const initializeTables = (db: QuickSQLiteConnection): void => {
   db.execute(`
     CREATE INDEX IF NOT EXISTS idx_extracted_text_page ON extracted_text(bookId, pageNumber);
   `);
-
-  console.log('✅ Database tables initialized');
 };
 
 /**
@@ -190,7 +181,6 @@ export const closeDatabase = (): void => {
   if (database) {
     database.close();
     database = null;
-    console.log('Database closed');
   }
 };
 

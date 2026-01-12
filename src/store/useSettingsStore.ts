@@ -15,14 +15,12 @@ import { getAllSettings, setSetting as dbSetSetting } from '../db';
 import { getThemeColors, ThemeColors } from '../theme';
 
 interface SettingsState extends AppSettings {
-  // Computed / Aliases
   themeColors: ThemeColors;
-  themeMode: ThemeMode; // Alias for theme
-  ttsRate: number; // Alias for ttsSpeed
-  ambientVolume: number; // Alias for ambientMusicVolume
+  themeMode: ThemeMode;
+  ttsRate: number;
+  ambientVolume: number;
   isLoading: boolean;
 
-  // Actions
   initialize: () => void;
   setTheme: (theme: ThemeMode) => void;
   setReaderFontSize: (size: number) => void;
@@ -40,14 +38,12 @@ interface SettingsState extends AppSettings {
   incrementEasterEggTap: () => number;
   resetEasterEggTaps: () => void;
 
-  // Book reader customization
   setBookReaderFontSize: (size: number) => void;
   setBookReaderFontFamily: (family: 'literata' | 'inter') => void;
   setBookReaderLineSpacing: (spacing: number) => void;
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
-  // Initial state
   ...defaultSettings,
   themeColors: getThemeColors(defaultSettings.theme),
   themeMode: defaultSettings.theme,
@@ -55,7 +51,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   ambientVolume: defaultSettings.ambientMusicVolume,
   isLoading: true,
 
-  // Initialize from database
   initialize: () => {
     try {
       const settings = getAllSettings();
@@ -73,25 +68,21 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
   },
 
-  // Theme
   setTheme: theme => {
     dbSetSetting('theme', theme);
     set({ theme, themeMode: theme, themeColors: getThemeColors(theme) });
   },
 
-  // Reader font size
   setReaderFontSize: readerFontSize => {
     dbSetSetting('readerFontSize', readerFontSize);
     set({ readerFontSize });
   },
 
-  // Reading mode
   setReadingMode: readingMode => {
     dbSetSetting('readingMode', readingMode);
     set({ readingMode });
   },
 
-  // Ambient music
   setAmbientMusic: ambientMusicEnabled => {
     dbSetSetting('ambientMusicEnabled', ambientMusicEnabled);
     set({ ambientMusicEnabled });
@@ -112,7 +103,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ ambientMusicVolume: volume, ambientVolume: volume });
   },
 
-  // TTS
   setTtsEnabled: ttsEnabled => {
     dbSetSetting('ttsEnabled', ttsEnabled);
     set({ ttsEnabled });
@@ -133,19 +123,16 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ ttsSpeed: rate, ttsRate: rate });
   },
 
-  // Highlight color
   setDefaultHighlightColor: defaultHighlightColor => {
     dbSetSetting('defaultHighlightColor', defaultHighlightColor);
     set({ defaultHighlightColor });
   },
 
-  // Onboarding
   completeOnboarding: () => {
     dbSetSetting('hasCompletedOnboarding', true);
     set({ hasCompletedOnboarding: true });
   },
 
-  // Easter egg
   incrementEasterEggTap: () => {
     const newCount = get().easterEggTapCount + 1;
     dbSetSetting('easterEggTapCount', newCount);
@@ -158,7 +145,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ easterEggTapCount: 0 });
   },
 
-  // Book reader customization
   setBookReaderFontSize: bookReaderFontSize => {
     const clamped = Math.max(0.8, Math.min(1.5, bookReaderFontSize));
     dbSetSetting('bookReaderFontSize', clamped);

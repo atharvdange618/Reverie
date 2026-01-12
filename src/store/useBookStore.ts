@@ -19,20 +19,17 @@ import {
 } from '../db';
 
 interface BookState {
-  // State
   books: BookWithProgress[];
   currentBook: BookWithProgress | null;
   lastOpenedBook: BookWithProgress | null;
   isLoading: boolean;
 
-  // Stats
   stats: {
     totalBooks: number;
     completedBooks: number;
     totalPagesRead: number;
   };
 
-  // Actions
   initialize: () => void;
   loadBooks: () => void;
   loadBook: (id: string) => BookWithProgress | null;
@@ -50,7 +47,6 @@ interface BookState {
 }
 
 export const useBookStore = create<BookState>((set, get) => ({
-  // Initial state
   books: [],
   currentBook: null,
   lastOpenedBook: null,
@@ -61,7 +57,6 @@ export const useBookStore = create<BookState>((set, get) => ({
     totalPagesRead: 0,
   },
 
-  // Initialize
   initialize: () => {
     try {
       get().loadBooks();
@@ -79,7 +74,6 @@ export const useBookStore = create<BookState>((set, get) => ({
     }
   },
 
-  // Load all books
   loadBooks: () => {
     try {
       const books = getAllBooks();
@@ -89,7 +83,6 @@ export const useBookStore = create<BookState>((set, get) => ({
     }
   },
 
-  // Load single book
   loadBook: id => {
     try {
       const book = getBookById(id);
@@ -103,7 +96,6 @@ export const useBookStore = create<BookState>((set, get) => ({
     }
   },
 
-  // Add new book
   addBook: (title, filePath, totalPages) => {
     const book = dbAddBook(title, filePath, totalPages);
     const bookWithProgress: BookWithProgress = {
@@ -120,7 +112,6 @@ export const useBookStore = create<BookState>((set, get) => ({
     return bookWithProgress;
   },
 
-  // Update reading progress
   updateProgress: (id, page) => {
     dbUpdateProgress(id, page);
 
@@ -144,7 +135,6 @@ export const useBookStore = create<BookState>((set, get) => ({
     get().refreshStats();
   },
 
-  // Update total pages (called when PDF is first loaded)
   updateTotalPages: (id, totalPages) => {
     dbUpdateTotalPages(id, totalPages);
 
@@ -152,7 +142,9 @@ export const useBookStore = create<BookState>((set, get) => ({
       const updateBook = (book: BookWithProgress): BookWithProgress => {
         if (book.id !== id) return book;
         const progress =
-          totalPages > 0 ? Math.round((book.currentPage / totalPages) * 100) : 0;
+          totalPages > 0
+            ? Math.round((book.currentPage / totalPages) * 100)
+            : 0;
         return { ...book, totalPages, progress };
       };
 
@@ -166,7 +158,6 @@ export const useBookStore = create<BookState>((set, get) => ({
     });
   },
 
-  // Update book title
   updateTitle: (id, title) => {
     dbUpdateTitle(id, title);
 
@@ -186,7 +177,6 @@ export const useBookStore = create<BookState>((set, get) => ({
     });
   },
 
-  // Delete book
   deleteBook: id => {
     dbDeleteBook(id);
 
@@ -200,12 +190,10 @@ export const useBookStore = create<BookState>((set, get) => ({
     get().refreshStats();
   },
 
-  // Set current book
   setCurrentBook: book => {
     set({ currentBook: book });
   },
 
-  // Refresh stats
   refreshStats: () => {
     try {
       const stats = getReadingStats();

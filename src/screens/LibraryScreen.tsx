@@ -43,14 +43,13 @@ const { width } = Dimensions.get('window');
 const CARD_GAP = spacing.md;
 const CARD_WIDTH = (width - spacing.lg * 2 - CARD_GAP) / 2;
 
-// Get a book cover color based on the title
 const getBookColor = (title: string, colors: any): string => {
   const colorOptions = [
     colors.accentPrimary,
     colors.accentSecondary,
-    '#6B8E7D', // Sage
-    '#9B7E6E', // Taupe
-    '#7E6B9B', // Violet
+    '#6B8E7D',
+    '#9B7E6E',
+    '#7E6B9B',
   ];
   const hash = title
     .split('')
@@ -58,7 +57,6 @@ const getBookColor = (title: string, colors: any): string => {
   return colorOptions[hash % colorOptions.length];
 };
 
-// Get a decorative pattern for the book cover
 const getBookPattern = (title: string): string => {
   const patterns = ['✦', '◇', '○', '❋', '✧', '◈'];
   const hash = title
@@ -67,7 +65,6 @@ const getBookPattern = (title: string): string => {
   return patterns[hash % patterns.length];
 };
 
-// Detect Mindfuck series books
 const detectMindfuckSeries = (title: string): boolean => {
   const lowerTitle = title.toLowerCase();
   const patterns = [
@@ -137,7 +134,6 @@ const BookCard = ({
             shadows.sm,
           ]}
         >
-          {/* Book Cover - PDF Thumbnail or Fallback */}
           <View style={[styles.bookCover, { backgroundColor: bookColor }]}>
             {!thumbnailError && (
               <View style={styles.thumbnailContainer}>
@@ -151,7 +147,6 @@ const BookCard = ({
                 />
               </View>
             )}
-            {/* Fallback pattern overlay - shows while loading or on error */}
             {(!thumbnailLoaded || thumbnailError) && (
               <View style={styles.patternOverlay}>
                 <Text style={styles.bookPattern}>
@@ -167,7 +162,6 @@ const BookCard = ({
             )}
           </View>
 
-          {/* Book Info */}
           <View style={styles.bookInfo}>
             <View style={styles.titleRow}>
               <Text
@@ -191,7 +185,6 @@ const BookCard = ({
               )}
             </View>
 
-            {/* Progress */}
             <View style={styles.progressRow}>
               <View
                 style={[
@@ -225,7 +218,6 @@ const BookCard = ({
   );
 };
 
-// Romantic quotes for empty library state
 const EMPTY_LIBRARY_QUOTES = [
   '"In the vast library of life, every unread story awaits its reader."',
   '"A library empty is a heart waiting to be filled with worlds."',
@@ -410,7 +402,6 @@ export const LibraryScreen = () => {
     </Animated.View>
   );
 
-  // Show loading overlay during import
   if (isImporting) {
     return (
       <SafeAreaView
@@ -442,7 +433,6 @@ export const LibraryScreen = () => {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Floating Add Button */}
       {books.length > 0 && (
         <Animated.View entering={FadeIn.duration(400).delay(300)}>
           <TouchableOpacity
@@ -458,7 +448,6 @@ export const LibraryScreen = () => {
         </Animated.View>
       )}
 
-      {/* Custom Dialog */}
       <Dialog
         visible={dialog.visible}
         title={dialog.title}

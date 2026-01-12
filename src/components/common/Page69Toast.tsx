@@ -29,7 +29,6 @@ interface Page69ToastProps {
 export const Page69Toast: React.FC<Page69ToastProps> = ({ visible }) => {
   const { themeColors } = useSettingsStore();
 
-  // Wiggle animation for the emoji
   const rotation = useSharedValue(0);
 
   useEffect(() => {

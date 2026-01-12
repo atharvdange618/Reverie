@@ -44,7 +44,6 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
         },
       ]}
     >
-      {/* Zoom Out */}
       <TouchableOpacity
         onPress={onZoomOut}
         disabled={!canZoomOut}
@@ -58,7 +57,6 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
         />
       </TouchableOpacity>
 
-      {/* Zoom Level Display */}
       <TouchableOpacity onPress={onReset} disabled={!canReset}>
         <Text
           style={[
@@ -74,7 +72,6 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
         </Text>
       </TouchableOpacity>
 
-      {/* Zoom In */}
       <TouchableOpacity
         onPress={onZoomIn}
         disabled={!canZoomIn}

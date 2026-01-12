@@ -53,16 +53,13 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
     updateProgress,
   } = useMusicStore();
 
-  // Hide music player when TTS is speaking
   const { isSpeaking: isTtsSpeaking } = useTtsStore();
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Animation values
   const expandProgress = useSharedValue(0);
   const pulseAnim = useSharedValue(1);
 
-  // Update progress every 500ms
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     if (isPlaying) {
@@ -75,7 +72,6 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
     };
   }, [isPlaying, updateProgress]);
 
-  // Pulse animation when playing
   useEffect(() => {
     if (isPlaying) {
       pulseAnim.value = withRepeat(
@@ -99,14 +95,12 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
   const currentTrack = AMBIENT_TRACKS[currentTrackIndex];
   const progress = duration > 0 ? currentTime / duration : 0;
 
-  // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Animated styles
   const containerStyle = useAnimatedStyle(() => ({
     height: interpolate(
       expandProgress.value,
@@ -119,13 +113,10 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
     transform: [{ scale: pulseAnim.value }],
   }));
 
-  // Hide when TTS is speaking
   if (isTtsSpeaking) {
     return null;
   }
 
-  // Dynamic bottom position based on current screen
-  // Reader screen has a toolbar, so we need more space
   const bottomPosition = isOnReaderScreen ? 145 : 85;
 
   return (
@@ -140,13 +131,11 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
         },
       ]}
     >
-      {/* Collapsed View - Always visible */}
       <TouchableOpacity
         style={styles.collapsedRow}
         onPress={toggleExpand}
         activeOpacity={0.8}
       >
-        {/* Track Icon with pulse */}
         <Animated.View
           style={[
             styles.trackIconContainer,
@@ -157,7 +146,6 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
           <Text style={styles.trackEmoji}>{currentTrack.icon}</Text>
         </Animated.View>
 
-        {/* Track Info */}
         <View style={styles.trackInfo}>
           <Text
             style={[styles.trackTitle, { color: themeColors.textPrimary }]}
@@ -172,7 +160,6 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
           </Text>
         </View>
 
-        {/* Mini Controls */}
         <View style={styles.miniControls}>
           <TouchableOpacity
             onPress={toggleMusic}
@@ -198,7 +185,6 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Progress Bar - Always visible */}
       <View
         style={[
           styles.progressContainer,
@@ -216,7 +202,6 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
         />
       </View>
 
-      {/* Time Display - Always visible below progress bar */}
       <View style={styles.timeRow}>
         <Text style={[styles.timeText, { color: themeColors.textSecondary }]}>
           {formatTime(currentTime)}
@@ -226,10 +211,8 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
         </Text>
       </View>
 
-      {/* Expanded Content */}
       {isExpanded && (
         <View style={styles.expandedContent}>
-          {/* Full Controls */}
           <View style={styles.fullControls}>
             <TouchableOpacity onPress={previousTrack} style={styles.skipButton}>
               <SkipBack size={24} color={themeColors.textPrimary} />
@@ -254,7 +237,6 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Track Selection */}
           <View style={styles.trackSelection}>
             {AMBIENT_TRACKS.map((track, index) => (
               <TouchableOpacity

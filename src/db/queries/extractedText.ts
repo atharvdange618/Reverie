@@ -89,7 +89,7 @@ export const cachePageText = (
 };
 
 /**
- * Cache multiple pages at once (batch operation)
+ * Cache multiple pages at once
  */
 export const cacheMultiplePages = (
   bookId: string,
@@ -114,7 +114,7 @@ export const clearCachedText = (bookId: string): void => {
 };
 
 /**
- * Clear all cached text (for cleanup)
+ * Clear all cached text
  */
 export const clearAllCachedText = (): void => {
   executeUpdate('DELETE FROM extracted_text', []);

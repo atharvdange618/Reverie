@@ -41,7 +41,6 @@ import { ConfessionModal, DeveloperNoteModal } from '../components/common';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-// Get time-based greeting
 const getGreeting = (): string => {
   const hour = new Date().getHours();
   if (hour < 12) return 'Good morning';
@@ -50,7 +49,6 @@ const getGreeting = (): string => {
   return 'Sweet dreams';
 };
 
-// Get reading encouragement based on time/stats
 const getEncouragement = (hasLastBook: boolean): string => {
   const messages = hasLastBook
     ? [
@@ -76,7 +74,6 @@ export const HomeScreen = () => {
   const [greeting] = useState(getGreeting());
   const [encouragement] = useState(getEncouragement(!!lastOpenedBook));
 
-  // Moon icon easter egg state
   const [moonTapCount, setMoonTapCount] = useState(0);
   const [showConfession, setShowConfession] = useState(false);
   const [confessionUnlocked, setConfessionUnlocked] = useState(false);
@@ -84,14 +81,12 @@ export const HomeScreen = () => {
     null,
   );
 
-  // Developer note easter egg state
   const [showDeveloperNote, setShowDeveloperNote] = useState(false);
   const [developerNoteContent, setDeveloperNoteContent] = useState({
     title: '',
     message: '',
   });
 
-  // Animation for the continue reading card
   const cardScale = useSharedValue(1);
 
   const handleContinueReading = () => {
@@ -103,9 +98,7 @@ export const HomeScreen = () => {
     }
   };
 
-  // Handle moon icon taps (3-7 taps reveals confession)
   const handleMoonPress = () => {
-    // Clear previous timeout
     if (moonTapTimeout.current) {
       clearTimeout(moonTapTimeout.current);
     }
@@ -113,7 +106,6 @@ export const HomeScreen = () => {
     const newCount = moonTapCount + 1;
     setMoonTapCount(newCount);
 
-    // Random threshold between 3-7 taps
     const threshold = confessionUnlocked
       ? 1
       : Math.floor(Math.random() * 5) + 3;
@@ -123,7 +115,6 @@ export const HomeScreen = () => {
       setConfessionUnlocked(true);
       setMoonTapCount(0);
     } else {
-      // Reset tap count after 2 seconds of inactivity
       moonTapTimeout.current = setTimeout(() => {
         setMoonTapCount(0);
       }, 2000);
@@ -134,7 +125,6 @@ export const HomeScreen = () => {
     transform: [{ scale: cardScale.value }],
   }));
 
-  // Handle long-press on stats section
   const handleStatsLongPress = () => {
     setDeveloperNoteContent({
       title: 'Why Reading Stats?',
@@ -156,7 +146,6 @@ Reading is your escape, your peace. These numbers? They're just a reminder of al
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header with greeting */}
         <Animated.View entering={FadeIn.duration(600)} style={styles.header}>
           <View style={styles.greetingRow}>
             <Text
@@ -194,7 +183,6 @@ Reading is your escape, your peace. These numbers? They're just a reminder of al
           </Text>
         </Animated.View>
 
-        {/* Continue Reading Card */}
         {lastOpenedBook && (
           <Animated.View entering={FadeInDown.duration(600).delay(200)}>
             <Animated.View style={cardAnimatedStyle}>
@@ -233,7 +221,6 @@ Reading is your escape, your peace. These numbers? They're just a reminder of al
                   {lastOpenedBook.title}
                 </Text>
 
-                {/* Progress bar */}
                 <View style={styles.progressContainer}>
                   <View
                     style={[
@@ -276,7 +263,6 @@ Reading is your escape, your peace. These numbers? They're just a reminder of al
           </Animated.View>
         )}
 
-        {/* Empty State - No books yet */}
         {!lastOpenedBook && !isLoading && (
           <Animated.View
             entering={FadeInDown.duration(600).delay(200)}
@@ -315,7 +301,6 @@ Reading is your escape, your peace. These numbers? They're just a reminder of al
           </Animated.View>
         )}
 
-        {/* Reading Stats */}
         <Animated.View
           entering={FadeInDown.duration(600).delay(400)}
           style={styles.statsSection}
@@ -420,7 +405,6 @@ Reading is your escape, your peace. These numbers? They're just a reminder of al
           </View>
         </Animated.View>
 
-        {/* Easter Egg Quote */}
         <Animated.View
           entering={FadeInDown.duration(600).delay(600)}
           style={styles.quoteSection}
@@ -447,13 +431,11 @@ Reading is your escape, your peace. These numbers? They're just a reminder of al
         </Animated.View>
       </ScrollView>
 
-      {/* Moon icon easter egg confession modal */}
       <ConfessionModal
         visible={showConfession}
         onClose={() => setShowConfession(false)}
       />
 
-      {/* Developer note easter egg modal */}
       <DeveloperNoteModal
         visible={showDeveloperNote}
         title={developerNoteContent.title}

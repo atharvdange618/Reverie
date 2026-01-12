@@ -34,10 +34,8 @@ export const TtsControls: React.FC<TtsControlsProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isTtsReady, setIsTtsReady] = useState(false);
 
-  // Animation for speaking indicator
   const pulseAnim = useSharedValue(1);
 
-  // Initialize TTS
   useEffect(() => {
     const initTts = async () => {
       try {
@@ -52,7 +50,6 @@ export const TtsControls: React.FC<TtsControlsProps> = ({
 
     initTts();
 
-    // TTS event listeners
     Tts.addEventListener('tts-start', () => {
       setIsPlaying(true);
     });
@@ -70,7 +67,6 @@ export const TtsControls: React.FC<TtsControlsProps> = ({
     };
   }, []);
 
-  // Pulse animation when speaking
   useEffect(() => {
     if (isPlaying) {
       pulseAnim.value = withRepeat(
@@ -114,7 +110,6 @@ export const TtsControls: React.FC<TtsControlsProps> = ({
         },
       ]}
     >
-      {/* Speaking Indicator */}
       <Animated.View
         style={[
           styles.speakingIndicator,
@@ -134,7 +129,6 @@ export const TtsControls: React.FC<TtsControlsProps> = ({
         />
       </Animated.View>
 
-      {/* Status Text */}
       <View style={styles.statusContainer}>
         <Text style={[styles.statusText, { color: themeColors.textPrimary }]}>
           {isPlaying ? 'Reading aloud...' : 'Text-to-Speech'}
@@ -144,7 +138,6 @@ export const TtsControls: React.FC<TtsControlsProps> = ({
         </Text>
       </View>
 
-      {/* Controls */}
       <View style={styles.controls}>
         <TouchableOpacity
           onPress={handlePlayPause}

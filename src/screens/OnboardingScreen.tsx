@@ -20,7 +20,6 @@ import Animated, {
 import { useSettingsStore } from '../store';
 import { typography, spacing, borderRadius } from '../theme';
 
-// Onboarding pages
 const pages = [
   {
     emoji: '🎂',
@@ -95,7 +94,6 @@ export const OnboardingScreen = () => {
     <View
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
-      {/* Skip button */}
       {!isLastPage && (
         <Animated.View
           entering={FadeIn.delay(500)}
@@ -111,7 +109,6 @@ export const OnboardingScreen = () => {
         </Animated.View>
       )}
 
-      {/* Content */}
       <View style={styles.content}>
         <Animated.View
           key={currentPage}
@@ -143,7 +140,6 @@ export const OnboardingScreen = () => {
         </Animated.View>
       </View>
 
-      {/* Dots indicator */}
       <View style={styles.dotsContainer}>
         {pages.map((_, index) => (
           <View
@@ -162,7 +158,6 @@ export const OnboardingScreen = () => {
         ))}
       </View>
 
-      {/* Button */}
       <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
         <TouchableOpacity
           onPress={handleNext}
@@ -180,7 +175,6 @@ export const OnboardingScreen = () => {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* Decorative elements */}
       <View
         style={[
           styles.decorTop,

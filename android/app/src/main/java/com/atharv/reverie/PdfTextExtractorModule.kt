@@ -16,7 +16,6 @@ class PdfTextExtractorModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun extractText(filePath: String, promise: Promise) {
         try {
-            // Initialize PDFBox for Android
             PDFBoxResourceLoader.init(reactApplicationContext)
 
             val file = File(filePath)
@@ -28,7 +27,6 @@ class PdfTextExtractorModule(reactContext: ReactApplicationContext) :
             val document = PDDocument.load(file)
             val stripper = PDFTextStripper()
             
-            // Preserve layout and paragraph structure
             stripper.setSortByPosition(true)
             stripper.setLineSeparator("\n")
             stripper.setWordSeparator(" ")
@@ -57,11 +55,8 @@ class PdfTextExtractorModule(reactContext: ReactApplicationContext) :
                 var pageText = stripper.getText(document)
                 
                 // Post-process to improve paragraph detection
-                // Replace multiple newlines with double newline for paragraphs
                 pageText = pageText.replace(Regex("\\n\\s*\\n"), "\n\n")
-                // Normalize whitespace within lines
                 pageText = pageText.replace(Regex("[ \\t]+"), " ")
-                // Remove trailing spaces from lines
                 pageText = pageText.replace(Regex(" +\\n"), "\n")
                 
                 val pageData = Arguments.createMap()
